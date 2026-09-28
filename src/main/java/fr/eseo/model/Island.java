@@ -284,6 +284,15 @@ public class Island {
 	}
 
 	/**
+	 * Start the timers that make the monkeys move.
+	 */
+	public void startMonkeys(){
+		for(Monkey monkey : this.monkeys){
+			monkey.getTimer().start();
+		}
+	}
+	
+	/**
 	 * Pick a random free position for a pirate, away from the monkeys when possible,
 	 * so that a new pirate is not caught before its player can react.
 	 * @return p a point

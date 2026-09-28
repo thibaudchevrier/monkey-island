@@ -10,6 +10,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import org.junit.After;
 import org.junit.Before;
@@ -97,10 +98,10 @@ public class TestCrazyMonkey {
 	public static final int DEFAULT_LEFT_MOVEMENT = 4;
 	
 	/** The monkeys. */
-	private ArrayList<Monkey> monkeys = Island.getInstance().getMonkeys();
+	private ArrayList<Monkey> monkeys = new ArrayList<Monkey>();
 	
 	/** The pirates. */
-	private ArrayList<Pirate> pirates = Island.getInstance().getPirates();
+	private ArrayList<Pirate> pirates = new ArrayList<Pirate>();
 	
 	/** The monkey. default monkey */
 	private CrazyMonkey monkey;
@@ -160,6 +161,10 @@ public class TestCrazyMonkey {
 	public void setUp() throws Exception{
 		this.monkeyIsland = mock(Island.class);
 	    this.islandStatic = Mockito.mockStatic(Island.class);
+		when(this.monkeyIsland.getnbLines()).thenReturn(NB_LINES);
+		when(this.monkeyIsland.getnbRows()).thenReturn(NB_ROWS);
+		when(this.monkeyIsland.getCase()).thenReturn(Fixtures.board(NB_LINES));
+		this.islandStatic.when(Island::getInstance).thenReturn(this.monkeyIsland);
 		
 		this.monkey = new CrazyMonkey(X_MONKEY, Y_MONKEY);
 		this.monkey1 = new CrazyMonkey(X_MONKEY+1, Y_MONKEY);
@@ -234,31 +239,32 @@ public class TestCrazyMonkey {
 		down=0;
 		left=0;
 		right=0;
-		when(this.monkeyIsland.getnbLines()).thenReturn(NB_LINES);
-		when(this.monkeyIsland.getnbRows()).thenReturn(NB_ROWS);
-		when(Island.getInstance()).thenReturn(monkeyIsland);
-		
-		final int oldX = this.monkey.getCoordinateX();
-		int oldY = this.monkey.getCoordinateY();
-		
+		// A seeded random source makes the walk, and so the test, reproducible.
+		final CrazyMonkey walker = new CrazyMonkey(DEFAULT_SPEED, NB_LINES / 2, NB_ROWS / 2, new Random(42));
+
 		for (int i=0; i<100; i++){
-			
-			this.monkey.movementMonkey();
-			
-			if(this.monkey.getCoordinateY()==(oldY + 1)){
+			final int oldX = walker.getCoordinateX();
+			final int oldY = walker.getCoordinateY();
+
+			walker.movementMonkey();
+
+			final int dx = walker.getCoordinateX() - oldX;
+			final int dy = walker.getCoordinateY() - oldY;
+			assertEquals("Error, one step per move", 1, Math.abs(dx) + Math.abs(dy));
+			if(dy == 1){
 				down++;
-			}else if(this.monkey.getCoordinateY()==(oldY - 1)){
+			}else if(dy == -1){
 				up++;
-			}else if(this.monkey.getCoordinateX()==(oldX - 1)){
+			}else if(dx == -1){
 				left++;
-			}else if(this.monkey.getCoordinateX()==(oldX + 1)){
+			}else{
 				right++;
 			}
 		}
-		assertEquals("Error, random is too high", down, 24);
-		assertEquals("Error, random is too high", up, 25);
-		assertEquals("Error, random is too high", right, 25);
-		assertEquals("Error, random is too high", left, 25);
+		// Every direction is taken, none dominates: roughly 25 each.
+		for(int count : new int[] {down, up, left, right}){
+			assertTrue("Error, the moves are not random enough: " + count, count >= 10 && count <= 40);
+		}
 	}
 	
 	/**
@@ -415,14 +421,13 @@ public class TestCrazyMonkey {
 		} catch(Exception e){
 			fail("Should not have thrown any exception");
 		}
-		assertEquals("error state", StatePirate.dead, this.monkeyIsland.collisionPirate(this.monkeyPirate.getCoordinateX()+1, this.monkeyPirate.getCoordinateY()).getState());
-		assertEquals("error energy", 0, this.pirate.getEnergy());
-		assertEquals("error state", StatePirate.dead, this.monkeyIsland.collisionPirate(this.monkeyPirate.getCoordinateX()-1, this.monkeyPirate.getCoordinateY()).getState());
-		assertEquals("error energy", 0, this.pirate1.getEnergy());
-		assertEquals("error state", StatePirate.dead, this.monkeyIsland.collisionPirate(this.monkeyPirate.getCoordinateX(), this.monkeyPirate.getCoordinateY()-1).getState());
-		assertEquals("error energy", 0, this.pirate2.getEnergy());
-		assertEquals("error state", StatePirate.dead, this.monkeyIsland.collisionPirate(this.monkeyPirate.getCoordinateX(), this.monkeyPirate.getCoordinateY()+1).getState());
-		assertEquals("error energy", 0, this.pirate3.getEnergy());
+		// The monkey takes one random step: only the pirate it lands on dies.
+		for(Pirate p : pirates){
+			final boolean caught = p.getCoordinateX() == this.monkeyPirate.getCoordinateX()
+					&& p.getCoordinateY() == this.monkeyPirate.getCoordinateY();
+			assertEquals("error state", caught ? StatePirate.dead : StatePirate.sober, p.getState());
+			assertEquals("error energy", caught ? 0 : Pirate.MAX_ENERGY, p.getEnergy());
+		}
 	}
 	
 

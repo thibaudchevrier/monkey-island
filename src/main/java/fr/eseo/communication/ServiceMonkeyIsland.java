@@ -55,6 +55,7 @@ public final class ServiceMonkeyIsland{
 		// Création du canal de diffusion.
 		this.canal = new CanalDiffusion();
 		Configuration.getInstance().loading();
+		Island.getInstance().startMonkeys();
 		// Socket à null par défaut.
 		this.socket = null;
 

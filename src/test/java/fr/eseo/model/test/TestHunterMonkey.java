@@ -11,6 +11,7 @@ import org.junit.Test;
 import static org.mockito.Mockito.*;
 import fr.eseo.model.Case;
 import fr.eseo.model.CaseType;
+import fr.eseo.model.CollisionException;
 import fr.eseo.model.CrazyMonkey;
 import fr.eseo.model.HunterMonkey;
 import fr.eseo.model.Island;
@@ -87,6 +88,7 @@ public class TestHunterMonkey {
 		this.monkeyIsland = mock(Island.class);
 	    this.islandStatic = Mockito.mockStatic(Island.class);
 		when(Island.getInstance()).thenReturn(monkeyIsland);
+		Fixtures.resetTreasure();
 		when(this.monkeyIsland.getnbLines()).thenReturn(NB_LINES);
 		when(this.monkeyIsland.getnbRows()).thenReturn(NB_ROWS);
 		when(this.monkeyIsland.getCase()).thenReturn(plateau);
@@ -234,8 +236,8 @@ public class TestHunterMonkey {
 		try{
 			this.hunter.movementHunterMonkey(tab);
 			fail("Exit island");
-		}catch (Exception e){
-			assertTrue(e.getMessage().contains("Limits of island"));
+		}catch (CollisionException e){
+			assertEquals(CollisionException.COLLISION_EXIT_ISLAND, e.getExceptionCause());
 		}
 
 		assertEquals("Error exit island X", 29, this.hunter.getCoordinateX());
@@ -259,8 +261,10 @@ public class TestHunterMonkey {
 			fail("Should not have thrown any exception");
 		}
 		
-		assertEquals("error state", StatePirate.dead, this.monkeyIsland.collisionPirate(this.hunter.getCoordinateX()+1, this.hunter.getCoordinateY()).getState());
-		assertEquals("error energy", 0, this.pirate.getEnergy());;
+		// The hunter now stands where the pirate was.
+		assertEquals("error position", X_PIRATE, this.hunter.getCoordinateX());
+		assertEquals("error state", StatePirate.dead, this.pirate.getState());
+		assertEquals("error energy", 0, this.pirate.getEnergy());
 	}
 	
 	/**
@@ -277,8 +281,8 @@ public class TestHunterMonkey {
 		try {
 			this.hunter.movementHunterMonkey(tab);
 			fail("Should return monkey");
-		}catch(Exception e){
-			assertTrue(e.getMessage().contains("There is already a monkey"));
+		}catch(CollisionException e){
+			assertEquals(CollisionException.COLLISION_MONKEY, e.getExceptionCause());
 		}
 		
 		assertEquals("Error Collision Pirate X", 10, this.hunter.getCoordinateX());
@@ -298,7 +302,8 @@ public class TestHunterMonkey {
 		when(this.monkeyIsland.collisionMonkey(this.hunter.getCoordinateX(), this.hunter.getCoordinateY()+1)).thenReturn(null);
 		int[] tab = {0 ,1};
 		try{
-			Treasure.getTreasure().setPosition(this.hunter.getCoordinateX(), this.hunter.getCoordinateY()+1);
+			Treasure.getTreasure().setCoordinateX(this.hunter.getCoordinateX());
+			Treasure.getTreasure().setCoordinateY(this.hunter.getCoordinateY()+1);
 			this.hunter.movementHunterMonkey(tab);
 		}catch(Exception e){
 			fail("Should not have thrown any exception");
@@ -317,8 +322,8 @@ public class TestHunterMonkey {
 		try{
 			this.hunter2.movementHunterMonkey(tab);
 			fail("Should return sea case");
-		}catch (Exception e){
-			assertTrue(e.getMessage().contains("Collision sea"));
+		}catch (CollisionException e){
+			assertEquals(CollisionException.COLLISION_SEA, e.getExceptionCause());
 		}
 
 		assertEquals("Error exit island X", 20, this.hunter2.getCoordinateX());

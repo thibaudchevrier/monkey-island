@@ -2,8 +2,11 @@ package fr.eseo.model.test;
 
 import static org.junit.Assert.assertEquals;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 import fr.eseo.model.CaseType;
 import fr.eseo.model.Configuration;
@@ -16,12 +19,22 @@ public class TestConfig {
 	
 	Island isl;
 	
+	private MockedStatic<Island> islandStatic;
+	
 	@Before
 	public void setUp() throws Exception{	
 		
-		isl = Island.getInstance();
+		// Load the configuration into a fresh island, not the shared singleton.
+		isl = new Island();
+		islandStatic = Mockito.mockStatic(Island.class);
+		islandStatic.when(Island::getInstance).thenReturn(isl);
+		Fixtures.resetTreasure();
 		conf = Configuration.getInstance();
-		
+	}
+	
+	@After
+	public void tearDown(){
+		islandStatic.close();
 	}
 	
 	@Test

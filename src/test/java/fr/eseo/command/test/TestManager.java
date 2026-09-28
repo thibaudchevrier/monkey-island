@@ -20,6 +20,7 @@ import org.mockito.Mockito;
 import fr.eseo.command.Manager;
 import fr.eseo.communication.Client;
 import fr.eseo.communication.ServiceMonkeyIsland;
+import fr.eseo.model.Configuration;
 import fr.eseo.model.CrazyMonkey;
 import fr.eseo.model.Island;
 import fr.eseo.model.Pirate;
@@ -33,6 +34,8 @@ public class TestManager {
 	private static final int PORT = 4242;
 
 	private MockedStatic<Island> islandStatic;
+
+	private MockedStatic<Configuration> configurationStatic;
 
 	private Island island;
 
@@ -55,6 +58,11 @@ public class TestManager {
 		this.island.getMonkeys().add(this.monkey);
 		this.islandStatic = Mockito.mockStatic(Island.class);
 		this.islandStatic.when(Island::getInstance).thenReturn(this.island);
+		// Pirates start with the energy of the configuration: make it independent of other tests.
+		final Configuration configuration = mock(Configuration.class);
+		when(configuration.getNRJMax()).thenReturn(Pirate.MAX_ENERGY);
+		this.configurationStatic = Mockito.mockStatic(Configuration.class);
+		this.configurationStatic.when(Configuration::getInstance).thenReturn(configuration);
 
 		this.sent = new ArrayList<String>();
 		this.service = mock(ServiceMonkeyIsland.class);
@@ -71,6 +79,7 @@ public class TestManager {
 	public void tearDown(){
 		this.manager.quitte();
 		this.islandStatic.close();
+		this.configurationStatic.close();
 	}
 
 	private Pirate pirate(){

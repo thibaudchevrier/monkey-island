@@ -63,6 +63,7 @@ public class TestTreasure {
 		when(this.isl.getCase()).thenReturn(plateau);
 		when(this.isl.collisionPirate(5, 5)).thenReturn(pir);
 		when(this.isl.collisionMonkey(7, 7)).thenReturn(monk);
+		Fixtures.resetTreasure();
 
 	}
 	

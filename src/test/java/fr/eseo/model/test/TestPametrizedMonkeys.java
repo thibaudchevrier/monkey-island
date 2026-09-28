@@ -133,33 +133,33 @@ public class TestPametrizedMonkeys {
 	public void testMovementByPirate(){
 		int erreur = 0;
 		HunterMonkey monk = new HunterMonkey(x, y);
-		Pirate pir = new Pirate(StatePirate.sober, 2,4);
-		Pirate pir2 = new Pirate(StatePirate.sober, 3,4);
-		Pirate pir3 = new Pirate(StatePirate.dead,4,3);
-		Pirate pir4 = new Pirate(StatePirate.dead,4,2);
-		when(this.isl.collisionPirate(2, 4)).thenReturn(pir);
-		when(this.isl.collisionPirate(3, 4)).thenReturn(pir2);
-		when(this.isl.collisionPirate(4, 3)).thenReturn(pir3);
-		when(this.isl.collisionPirate(4, 2)).thenReturn(pir4);
+		// One living pirate on each case next to the monkey.
+		Pirate[] pirates = {
+			new Pirate(StatePirate.sober, x+1, y),
+			new Pirate(StatePirate.sober, x-1, y),
+			new Pirate(StatePirate.sober, x, y+1),
+			new Pirate(StatePirate.sober, x, y-1)
+		};
+		for(Pirate pirate : pirates){
+			when(this.isl.collisionPirate(pirate.getCoordinateX(), pirate.getCoordinateY())).thenReturn(pirate);
+		}
 		try{
 			monk.setPositionMonk(deplacement.x, deplacement.y);
 			erreur = 0;
 		}catch(Exception e){
 			erreur = 1;
 		}
-		
+
 		if(erreur == 0){
 			assertNotEquals("error should move x ", x+y, monk.getCoordinateX()+ monk.getCoordinateY());
-			if(deplacement.x == 1 && deplacement.y == 0)
-				assertEquals("error should be dead ", pir3.getState(), StatePirate.dead);
-			else if(deplacement.x == 0 && deplacement.y == 1)
-				assertEquals("error should be dead  ", pir2.getState(), StatePirate.dead);
-			else if(deplacement.x == -1 && deplacement.y == 0)
-				assertEquals("error should be dead  ", pir.getState(), StatePirate.dead);
-			else if(deplacement.x == 0 && deplacement.y == -1)
-				assertEquals("error should be dead  ", pir4.getState(), StatePirate.dead);
-		}else 
+		}else
 			assertEquals("error shouldn't move x ", x+y, monk.getCoordinateX()+ monk.getCoordinateY());
+		// Only the pirate the monkey lands on dies.
+		for(Pirate pirate : pirates){
+			final boolean caught = pirate.getCoordinateX() == monk.getCoordinateX()
+					&& pirate.getCoordinateY() == monk.getCoordinateY();
+			assertEquals("error state", caught ? StatePirate.dead : StatePirate.sober, pirate.getState());
+		}
 	}
 
 	@After

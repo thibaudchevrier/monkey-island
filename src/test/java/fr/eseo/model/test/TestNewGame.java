@@ -31,6 +31,7 @@ public class TestNewGame {
 
 	@Before
 	public void setUp(){
+		Fixtures.resetTreasure();
 		this.island = new Island();
 		this.island.setIsland(8, 8);
 		this.dead = new Pirate(1, 0, 2, 2);

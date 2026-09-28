@@ -4,11 +4,18 @@ import static org.junit.Assert.*;
 
 import java.awt.Point;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+
 import fr.eseo.model.*;
 
 public class TestIsland {
+	
+	/** Every test gets its own island instead of the shared singleton. */
+	private MockedStatic<Island> islandStatic;
 	
 	private Island isl;
 	
@@ -24,7 +31,11 @@ public class TestIsland {
 	@Before
 	public void setUp() throws Exception{	
 		
-		isl = Island.getInstance();
+		isl = new Island();
+		isl.setIsland(30, 30);
+		islandStatic = Mockito.mockStatic(Island.class);
+		islandStatic.when(Island::getInstance).thenReturn(isl);
+		Fixtures.resetTreasure();
 		pirate = new Pirate(0, 0);
 		pirate2 = new Pirate(5, 5);
 		monkey = new CrazyMonkey(7,7);
@@ -35,6 +46,11 @@ public class TestIsland {
 		isl.getPirates().add(pirate2);
 		isl.getMonkeys().add(monkey);
 		isl.getRhums().add(rhum);
+	}
+	
+	@After
+	public void tearDown(){
+		islandStatic.close();
 	}
 	
 	@Test

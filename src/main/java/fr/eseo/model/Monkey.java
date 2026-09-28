@@ -10,6 +10,8 @@ import javax.swing.Timer;
  */
 public abstract class Monkey extends Entity implements ActionListener{
 
+	// The timer is started by Island.startMonkeys(), once the game is set up.
+
 	private Timer timer = null;
 	/** The speed. */
 	private int speed;
@@ -24,7 +26,6 @@ public abstract class Monkey extends Entity implements ActionListener{
 		super();
 		this.speed = DEFAULT_SPEED;
 		this.timer = new Timer(speed, this);
-		this.timer.start();
 	}
 	
 	/**
@@ -37,7 +38,6 @@ public abstract class Monkey extends Entity implements ActionListener{
 		super(x, y);
 		this.speed = DEFAULT_SPEED;
 		this.timer = new Timer(speed, this);
-		this.timer.start();
 	}
 	
 	/**
@@ -51,7 +51,6 @@ public abstract class Monkey extends Entity implements ActionListener{
 		super(x, y);
 		this.speed = speed;
 		this.timer = new Timer(speed, this);
-		this.timer.start();
 	}
 	
 	

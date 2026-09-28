@@ -96,7 +96,9 @@ public class TestPirate {
 		this.pirate = new Pirate(X_PIRATE, Y_PIRATE);
 		this.pirate2 = new Pirate(X_PIRATE2, Y_PIRATE2);
 		this.monkey = new CrazyMonkey(X_MONKEY, Y_MONKEY);
-		this.rhum = new Rhum(20, 21, true);
+		// A long respawn delay: the bottle must still be hidden when the test checks it.
+		this.rhum = new Rhum(20, 21, true, Rhum.DEFAULT_ENERGY_QUANTITY, 60_000);
+		Fixtures.resetTreasure();
 	}
 	
 	/**
@@ -108,6 +110,7 @@ public class TestPirate {
 	public void tearDown() throws Exception 
 	{
 		this.islandStatic.close();
+		this.rhum.getTimer().stop();
 	}
 	
 	/** 
