@@ -45,4 +45,14 @@
   <Match>
     <Bug pattern="USO_UNSAFE_OBJECT_SYNCHRONIZATION"/>
   </Match>
+
+  <!--
+    Pirate state is changed by client threads (Manager) and by timers (monkeys, sobering
+    up), and all of them hold Island.LOCK. The detector sees the lock only in soberUp()
+    and assumes the other writes are unguarded.
+  -->
+  <Match>
+    <Class name="fr.eseo.model.Pirate"/>
+    <Bug pattern="AT_NONATOMIC_OPERATIONS_ON_SHARED_VARIABLE,AT_STALE_THREAD_WRITE_OF_PRIMITIVE"/>
+  </Match>
 </FindBugsFilter>

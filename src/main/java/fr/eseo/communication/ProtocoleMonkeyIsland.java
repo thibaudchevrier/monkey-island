@@ -157,27 +157,17 @@ public final class ProtocoleMonkeyIsland {
   }
 
   /**
-   * Formate le message renvoyé pour le déplacement du pirate.
+   * Lit le déplacement demandé par un message "/D dx dy".
    *
    * @param message the message sent
-   * @return p a point
+   * @return the requested move (dx, dy)
+   * @throws IllegalArgumentException if dx or dy is not a number
+   * @throws IndexOutOfBoundsException if dx or dy is missing
    */
   public static final Point commandeDuDeplacement(String message) {
-    final Point p = new Point();
-    if (message.charAt(3) == '-') {
-      p.x = -1;
-      p.y = 0;
-    } else if (message.charAt(5) == '-') {
-      p.x = 0;
-      p.y = -1;
-    } else if (message.charAt(3) == '1') {
-      p.x = 1;
-      p.y = 0;
-    } else {
-      p.x = 0;
-      p.y = 1;
-    }
-    return p;
+    final String[] parametres =
+        message.substring(TAILLE_COMMANDE + 1).trim().split(SEPARATEUR_CHAMPS);
+    return new Point(Integer.parseInt(parametres[0]), Integer.parseInt(parametres[1]));
   }
 
   /**

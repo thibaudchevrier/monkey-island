@@ -52,7 +52,8 @@ public final class CommunicationMonkeyIsland {
    * @throws IOException exception d'entrée/sortie.
    */
   public void envoieMessageErreur(String message) throws IOException {
-    // this.envoieMessage(/*TODO*/);
+    // Guybrush recognises errors by this prefix and reports them.
+    this.envoieMessage(ProtocoleMonkeyIsland.MESSAGE_ERREUR + message);
   }
 
   /**

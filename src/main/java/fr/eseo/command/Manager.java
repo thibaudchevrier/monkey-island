@@ -5,6 +5,8 @@ import fr.eseo.communication.ProtocoleMonkeyIsland;
 import fr.eseo.model.CollisionException;
 import fr.eseo.model.Configuration;
 import fr.eseo.model.CrazyMonkey;
+import fr.eseo.model.Entity;
+import fr.eseo.model.EntityObserver;
 import fr.eseo.model.HunterMonkey;
 import fr.eseo.model.Island;
 import fr.eseo.model.Monkey;
@@ -15,8 +17,6 @@ import fr.eseo.model.Treasure;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.util.Observable;
-import java.util.Observer;
 
 /**
  * The class Action for the design pattern Command.
@@ -24,8 +24,7 @@ import java.util.Observer;
  * <p>There is one Manager per connected client, for the whole connection. It owns the client's
  * pirate and observes the entities of the island.
  */
-@SuppressWarnings("deprecation") // java.util.Observer: see Entity.
-public class Manager implements Observer, KeyListener {
+public class Manager implements EntityObserver, KeyListener {
 
   private String message;
 
@@ -126,16 +125,24 @@ public class Manager implements Observer, KeyListener {
   /** Handle the movement of the pirate of the client. */
   public void movePirate() {
     synchronized (Island.LOCK) {
-      if (this.pirate == null || this.pirate.getState() == StatePirate.dead) {
+      // Every move gets an answer (/A or /R): Guybrush locks its keyboard until then.
+      if (this.pirate == null) {
+        this.client.envoieMessageErreur("Pirate non inscrit : envoyer /I avant de se déplacer.");
+        this.client.envoieMessage(ProtocoleMonkeyIsland.formaterRefusDeplacementPirate());
+        return;
+      }
+      if (this.pirate.getState() == StatePirate.dead) {
         this.client.envoieMessage(ProtocoleMonkeyIsland.formaterRefusDeplacementPirate());
         return;
       }
       try {
         final Point p = ProtocoleMonkeyIsland.commandeDuDeplacement(message);
         this.pirate.movementPirate(p.x, p.y);
-      } catch (CollisionException | IllegalArgumentException | IndexOutOfBoundsException e) {
+      } catch (CollisionException e) {
         this.client.envoieMessage(ProtocoleMonkeyIsland.formaterRefusDeplacementPirate());
-        System.err.println(e.getMessage());
+      } catch (IllegalArgumentException | IndexOutOfBoundsException e) {
+        this.client.envoieMessageErreur("Déplacement invalide : " + message);
+        this.client.envoieMessage(ProtocoleMonkeyIsland.formaterRefusDeplacementPirate());
       }
       final Treasure treasure = Treasure.getTreasure();
       if (treasure.getVisibility()
@@ -212,8 +219,8 @@ public class Manager implements Observer, KeyListener {
   }
 
   @Override
-  public void update(Observable o, Object arg1) {
-    if (o == this.pirate) {
+  public void update(Entity entity) {
+    if (entity == this.pirate) {
       this.client.envoieMessage(
           ProtocoleMonkeyIsland.formaterAcceptationDeplacementPirate(this.pirate));
       if (this.pirate.getState() == StatePirate.dead) {
@@ -221,20 +228,19 @@ public class Manager implements Observer, KeyListener {
       } else {
         this.diffuser(ProtocoleMonkeyIsland.formaterDeplacementPirate(this.pirate));
       }
-    } else if (o instanceof Rhum) {
-      final Rhum rhum = (Rhum) o;
+    } else if (entity instanceof Rhum rhum) {
       this.client.envoieMessage(
           ProtocoleMonkeyIsland.formaterIdentificationRhum(
               rhum, Island.getInstance().getRhums().indexOf(rhum)));
-    } else if (o instanceof Treasure) {
+    } else if (entity instanceof Treasure) {
       if (Treasure.getTreasure().getVisibility()) {
         this.client.envoieMessage(ProtocoleMonkeyIsland.formaterIdentificationTreasure());
       }
-    } else if (o instanceof CrazyMonkey) {
+    } else if (entity instanceof CrazyMonkey) {
       this.client.envoieMessage(
           ProtocoleMonkeyIsland.formaterPositionSingeCrazy(Island.getInstance().getMonkeys()));
       this.liberationClavier();
-    } else if (o instanceof HunterMonkey) {
+    } else if (entity instanceof HunterMonkey) {
       this.client.envoieMessage(
           ProtocoleMonkeyIsland.formaterPositionSingeHunter(Island.getInstance().getMonkeys()));
       this.liberationClavier();

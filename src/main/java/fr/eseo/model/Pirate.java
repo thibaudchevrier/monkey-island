@@ -1,5 +1,8 @@
 package fr.eseo.model;
 
+import java.util.Random;
+import javax.swing.Timer;
+
 /** The Class Pirate. */
 public class Pirate extends Entity {
 
@@ -20,6 +23,21 @@ public class Pirate extends Entity {
 
   /** The Constant DEFAULT_STATE_PIRATE. */
   public static final StatePirate DEFAULT_STATE_PIRATE = StatePirate.sober;
+
+  /** How long a pirate stays drunk after drinking rum, in milliseconds. */
+  public static final int DEFAULT_DRUNK_DURATION = 5000;
+
+  /** Chance, in percent, that a drunk pirate stumbles in a random direction. */
+  public static final int DEFAULT_STUMBLE_CHANCE = 33;
+
+  /** The four moves a stumbling pirate picks from: right, left, down, up. */
+  private static final int[][] DIRECTIONS = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+
+  /** The source of the stumbles. */
+  private Random random = new Random();
+
+  /** The timer that sobers the pirate up, created on its first drink. */
+  private Timer soberTimer;
 
   /**
    * Instantiates a new pirate.
@@ -79,8 +97,7 @@ public class Pirate extends Entity {
    */
   public void setState(StatePirate state) {
     this.state = state;
-    this.setChanged();
-    this.notifyObservers(this.state);
+    this.notifyObservers();
   }
 
   /**
@@ -128,8 +145,18 @@ public class Pirate extends Entity {
         || (x == 0 && y == 0))) {
       throw new IllegalArgumentException("MOVEMENT not allowed");
     }
-    final int newX = this.getCoordinateX() + x;
-    final int newY = this.getCoordinateY() + y;
+    int dx = x;
+    int dy = y;
+    if (this.state == StatePirate.drunk
+        && (dx != 0 || dy != 0)
+        && this.random.nextInt(100) < Configuration.getInstance().getStumbleChance()) {
+      // Drunk: the pirate stumbles in a random direction instead.
+      final int[] stumble = DIRECTIONS[this.random.nextInt(DIRECTIONS.length)];
+      dx = stumble[0];
+      dy = stumble[1];
+    }
+    final int newX = this.getCoordinateX() + dx;
+    final int newY = this.getCoordinateY() + dy;
     this.setPosition(newX, newY);
     if (this.getState() == StatePirate.dead) {
       return;
@@ -142,6 +169,8 @@ public class Pirate extends Entity {
       this.energy = this.energy + rhum.getEnergyQuantity();
       rhum.setVisibility(false);
       rhum.getTimer().start();
+      this.state = StatePirate.drunk;
+      this.startSoberTimer();
     } else if (newX == Treasure.getTreasure().getCoordinateX()
         && newY == Treasure.getTreasure().getCoordinateY()) {
       Treasure.getTreasure().setVisibility(true);
@@ -164,8 +193,39 @@ public class Pirate extends Entity {
    * @param energy the energy of the pirate
    */
   public void respawn(int x, int y, int energy) {
+    if (this.soberTimer != null) {
+      this.soberTimer.stop();
+    }
     this.energy = energy;
     this.state = DEFAULT_STATE_PIRATE;
     this.moveTo(x, y);
+  }
+
+  /**
+   * Sets the source of the stumbles, to make a drunk pirate predictable in tests.
+   *
+   * @param random the source of the stumbles
+   */
+  public void setRandom(Random random) {
+    this.random = random;
+  }
+
+  /** Starts, or restarts, the countdown until the pirate is sober again. */
+  private void startSoberTimer() {
+    if (this.soberTimer == null) {
+      this.soberTimer = new Timer(0, event -> this.soberUp());
+      this.soberTimer.setRepeats(false);
+    }
+    this.soberTimer.setInitialDelay(Configuration.getInstance().getDrunkDuration());
+    this.soberTimer.restart();
+  }
+
+  /** The rum wears off: a drunk pirate becomes sober. */
+  private void soberUp() {
+    synchronized (Island.LOCK) {
+      if (this.state == StatePirate.drunk) {
+        this.setState(StatePirate.sober);
+      }
+    }
   }
 }

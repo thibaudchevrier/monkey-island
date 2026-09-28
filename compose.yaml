@@ -1,18 +1,25 @@
+# Local build:      docker compose up --build
+# Released version: TAG=1.0.0 docker compose up --pull always --no-build
+#                   (TAG can be 1.0.0, 1.0, 1, latest, main, sha-<commit>)
+
 services:
   server:
+    image: ghcr.io/thibaudchevrier/monkey-island-server:${TAG:-dev}
     build: .
     ports:
       - "13579:13579"
 
   client:
+    image: ghcr.io/thibaudchevrier/monkey-island-client:${TAG:-dev}
     build: client
     depends_on:
       - server
     ports:
       - "6080:6080"
 
-  # A second player in another browser tab: docker compose --profile duo up --build
+  # A second player in another browser tab: add --profile duo
   client2:
+    image: ghcr.io/thibaudchevrier/monkey-island-client:${TAG:-dev}
     build: client
     profiles: [duo]
     depends_on:

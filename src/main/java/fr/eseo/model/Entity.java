@@ -1,15 +1,18 @@
 package fr.eseo.model;
 
-import java.util.Observable;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * An entity of the island: pirate, monkey, rum bottle or treasure.
  *
- * <p>Entities are observed by the managers of the clients (Observer pattern). {@link Observable} is
- * deprecated since Java 9 but kept on purpose: this pattern is what the project demonstrates.
+ * <p>Entities are the subjects of the Observer pattern: the manager of each client observes them
+ * and tells its client when they change.
  */
-@SuppressWarnings("deprecation")
-public abstract class Entity extends Observable {
+public abstract class Entity {
+
+  /** The observers, notified after each change. Safe to modify while notifying. */
+  private final List<EntityObserver> observers = new CopyOnWriteArrayList<EntityObserver>();
 
   /** The coordinate X. */
   private int coordinateX;
@@ -59,8 +62,7 @@ public abstract class Entity extends Observable {
    */
   public void setCoordinateX(int x) {
     this.coordinateX = x;
-    this.setChanged();
-    this.notifyObservers(this.coordinateX);
+    this.notifyObservers();
   }
 
   /**
@@ -70,8 +72,7 @@ public abstract class Entity extends Observable {
    */
   public void setCoordinateY(int y) {
     this.coordinateY = y;
-    this.setChanged();
-    this.notifyObservers(this.coordinateY);
+    this.notifyObservers();
   }
 
   /**
@@ -83,7 +84,6 @@ public abstract class Entity extends Observable {
   protected void moveTo(int x, int y) {
     this.coordinateX = x;
     this.coordinateY = y;
-    this.setChanged();
     this.notifyObservers();
   }
 
@@ -112,6 +112,47 @@ public abstract class Entity extends Observable {
       throw new CollisionException("Case pirate not allowed", CollisionException.COLLISION_PIRATE);
     } else if (Island.getInstance().collisionMonkey(x, y) != null && this instanceof Monkey) {
       throw new CollisionException("Case monkey not allowed", CollisionException.COLLISION_MONKEY);
+    }
+  }
+
+  /**
+   * Adds an observer, unless it is already registered.
+   *
+   * @param observer the observer to notify of changes
+   */
+  public void addObserver(EntityObserver observer) {
+    if (!this.observers.contains(observer)) {
+      this.observers.add(observer);
+    }
+  }
+
+  /**
+   * Removes an observer.
+   *
+   * @param observer the observer to remove
+   */
+  public void deleteObserver(EntityObserver observer) {
+    this.observers.remove(observer);
+  }
+
+  /** Removes every observer. */
+  public void deleteObservers() {
+    this.observers.clear();
+  }
+
+  /**
+   * Counts the observers.
+   *
+   * @return the number of observers
+   */
+  public int countObservers() {
+    return this.observers.size();
+  }
+
+  /** Notifies every observer that this entity changed. */
+  protected void notifyObservers() {
+    for (EntityObserver observer : this.observers) {
+      observer.update(this);
     }
   }
 }

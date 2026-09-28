@@ -50,7 +50,6 @@ public abstract class Item extends Entity {
    */
   public void setVisibility(boolean visibility) {
     this.visibility = visibility;
-    this.setChanged();
-    this.notifyObservers(this.visibility);
+    this.notifyObservers();
   }
 }

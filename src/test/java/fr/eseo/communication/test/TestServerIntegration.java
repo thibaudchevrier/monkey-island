@@ -84,8 +84,9 @@ public class TestServerIntegration {
     }
 
     /**
-     * Moves the pirate and waits for the answer: refused (/R), or accepted (/A) at the new
-     * position. The server also resends the position when monkeys move; those are skipped.
+     * Moves the pirate and waits for the answer: refused (/R), or accepted (/A) one case away. The
+     * position is usually the requested one, unless the pirate is drunk. The server also resends
+     * the position when monkeys move; those are skipped.
      *
      * @return true if the move was accepted
      */
@@ -102,7 +103,8 @@ public class TestServerIntegration {
           final int newX = Integer.parseInt(fields[0]);
           final int newY = Integer.parseInt(fields[1]);
           final boolean dead = "0".equals(fields[2]);
-          if (dead || newX == this.x + dx && newY == this.y + dy) {
+          // One step away: where it was asked, or elsewhere if the pirate is drunk and stumbled.
+          if (dead || Math.abs(newX - this.x) + Math.abs(newY - this.y) == 1) {
             this.x = newX;
             this.y = newY;
             return true;
@@ -191,6 +193,24 @@ public class TestServerIntegration {
         assertNotNull("the first player is not told about the second", joined);
       }
       assertEquals("/s " + secondId, first.await("/s " + secondId));
+    }
+  }
+
+  @Test
+  public void testInvalidCommandsGetAnError() throws IOException {
+    try (Player player = new Player()) {
+      player.send("bonjour");
+      assertEquals("Erreur MonkeyIsland : Format de commande erroné.", player.await("Erreur"));
+      player.send("/X");
+      assertEquals("Erreur MonkeyIsland : Commande inconnue.", player.await("Erreur"));
+      // Moving before registering: an error, and a refusal so Guybrush unlocks its keyboard.
+      player.send("/D 1 0");
+      assertTrue(player.await("Erreur").contains("Pirate non inscrit"));
+      assertNotNull(player.await("/R"));
+      player.register();
+      player.send("/D a b");
+      assertEquals("Erreur MonkeyIsland : Déplacement invalide : /D a b", player.await("Erreur"));
+      assertNotNull(player.await("/R"));
     }
   }
 }

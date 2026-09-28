@@ -24,6 +24,8 @@ and move your pirate with the **arrow keys**.
 
 - Each move costs one energy. A pirate with no energy left dies.
 - Rum gives back 15 energy. The bottle comes back after 10 seconds.
+- Rum also makes you drunk for 5 seconds: each move then has a 1 in 3 chance to go in a
+  random direction, maybe straight into a monkey.
 - Crazy monkeys wander at random. The hunter monkey chases the closest living pirate.
   A monkey that reaches a pirate kills it, even while its player is idle.
 - The treasure is hidden. Step on it to reveal it and win the round. Three seconds
@@ -50,12 +52,16 @@ java -jar client/Guybrush_2015_v2.jar
 
 ## Published images
 
-Every release publishes both images to the GitHub Container Registry, for amd64 and arm64:
+Every release publishes both images to the GitHub Container Registry, for amd64 and arm64.
+The same `compose.yaml` runs either your local build or a published version:
 
 ```sh
-docker run -p 13579:13579 ghcr.io/thibaudchevrier/monkey-island-server:1
-docker run -p 6080:6080 -e SERVER_HOST=host.docker.internal ghcr.io/thibaudchevrier/monkey-island-client:1
+docker compose up --build                            # build from source (images tagged dev)
+TAG=1.0.0 docker compose up --pull always --no-build   # a published version
 ```
+
+`TAG` can be a version (`1.0.0`, `1.0`, `1`, `latest`), `main`, or `sha-<commit>`.
+`--no-build` makes a missing tag fail instead of silently building from source.
 
 ## Develop
 
@@ -88,7 +94,7 @@ treasure and rum positions, monkeys, energy and speeds. Rebuild after changing t
 | [Checkstyle](https://checkstyle.org) | naming, imports, braces, Javadoc on the public API | `config/checkstyle/` |
 | [SpotBugs](https://spotbugs.github.io) | bug patterns (successor of FindBugs) | `config/spotbugs/exclude.xml` |
 | Javadoc doclint | broken documentation | `build.gradle.kts` |
-| JUnit + Mockito | 142 tests, including a TCP integration test | `src/test/` |
+| JUnit + Mockito | 152 tests, including a TCP integration test | `src/test/` |
 | [JaCoCo](https://www.jacoco.org) | at least 70% line coverage (successor of Emma) | `build.gradle.kts` |
 
 Reports land in `build/reports/`.
@@ -129,7 +135,3 @@ docs/             original report, design-pattern slides, test data
   that send nothing (Shift, Cmd...). The server works around this by resending your
   position on every monkey move, so a stuck keyboard unlocks within a second.
 - `IslandHeigth` is ignored: the island is always square (`IslandWidth` is read twice).
-- Error messages are never sent to the client (`envoieMessageErreur` is a stub).
-- The drunk pirate state (`StatePirate.drunk`) exists but is never used.
-- `java.util.Observable` is deprecated since Java 9. It is kept on purpose, as the
-  Observer pattern is what the project demonstrates.

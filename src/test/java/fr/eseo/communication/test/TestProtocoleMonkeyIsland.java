@@ -6,6 +6,7 @@ import fr.eseo.communication.ProtocoleMonkeyIsland;
 import fr.eseo.model.Pirate;
 import fr.eseo.model.Rhum;
 import fr.eseo.model.StatePirate;
+import java.awt.Point;
 import java.util.Arrays;
 import org.junit.Test;
 
@@ -40,5 +41,22 @@ public class TestProtocoleMonkeyIsland {
         "/B 4-4-1___5-6-0",
         ProtocoleMonkeyIsland.formaterPositionRhum(
             Arrays.asList(new Rhum(4, 4, true), new Rhum(5, 6, false))));
+  }
+
+  @Test
+  public void testMoveParsing() {
+    assertEquals(new Point(-1, 0), ProtocoleMonkeyIsland.commandeDuDeplacement("/D -1 0"));
+    assertEquals(new Point(0, 1), ProtocoleMonkeyIsland.commandeDuDeplacement("/D 0 1"));
+    assertEquals(new Point(0, 0), ProtocoleMonkeyIsland.commandeDuDeplacement("/D 0 0"));
+  }
+
+  @Test(expected = NumberFormatException.class)
+  public void testMoveParsingRejectsText() {
+    ProtocoleMonkeyIsland.commandeDuDeplacement("/D a b");
+  }
+
+  @Test(expected = IndexOutOfBoundsException.class)
+  public void testMoveParsingRejectsMissingValues() {
+    ProtocoleMonkeyIsland.commandeDuDeplacement("/D 1");
   }
 }

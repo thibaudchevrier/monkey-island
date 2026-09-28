@@ -13,6 +13,12 @@ public final class Configuration {
 
   private int nrjPirateMax = 0;
 
+  /** How long a pirate stays drunk after drinking rum, in milliseconds. */
+  private int drunkDuration = Pirate.DEFAULT_DRUNK_DURATION;
+
+  /** Chance, in percent, that a drunk pirate stumbles in a random direction. */
+  private int stumbleChance = Pirate.DEFAULT_STUMBLE_CHANCE;
+
   private static final Configuration CONFIG = new Configuration();
 
   /**
@@ -34,6 +40,24 @@ public final class Configuration {
    */
   public int getNRJMax() {
     return this.nrjPirateMax;
+  }
+
+  /**
+   * How long a pirate stays drunk after drinking rum.
+   *
+   * @return the duration in milliseconds
+   */
+  public int getDrunkDuration() {
+    return this.drunkDuration;
+  }
+
+  /**
+   * Chance that a drunk pirate stumbles in a random direction.
+   *
+   * @return the chance in percent
+   */
+  public int getStumbleChance() {
+    return this.stumbleChance;
   }
 
   /** Configure the data from the configuration file. */
@@ -98,6 +122,14 @@ public final class Configuration {
 
       if (properties.getProperty("NRJMaxPirate") != null) {
         this.nrjPirateMax = Integer.parseInt(properties.getProperty("NRJMaxPirate"));
+      }
+
+      if (properties.getProperty("DrunkDuration") != null) {
+        this.drunkDuration = Integer.parseInt(properties.getProperty("DrunkDuration"));
+      }
+
+      if (properties.getProperty("StumbleChance") != null) {
+        this.stumbleChance = Integer.parseInt(properties.getProperty("StumbleChance"));
       }
 
     } catch (FileNotFoundException e) {
