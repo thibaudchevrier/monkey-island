@@ -97,8 +97,10 @@ public class Rhum extends Item implements ActionListener{
 
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
-		this.setVisibility(true);
-		this.timer.stop();
+		synchronized(Island.LOCK){
+			this.setVisibility(true);
+			this.timer.stop();
+		}
 	}
 	
 }

@@ -102,20 +102,14 @@ public abstract class Monkey extends Entity implements ActionListener{
 		if(!((x == -1 && y == 0) || (x == 1 && y == 0) || (x == 0 && y == 1) || (x == 0 && y == -1) || (x == 0 && y == 0))){
 			throw new IllegalArgumentException("MOVEMENT not allowed");
 		}
-		try{
-			this.setPosition(this.getCoordinateX()+x, this.getCoordinateY()+y);
-			this.setCoordinateX(this.getCoordinateX()+x);
-			this.setCoordinateY(this.getCoordinateY()+y);
-			if((Island.getInstance().collisionPirate(this.getCoordinateX(), this.getCoordinateY())!=null) 
-					&& (Island.getInstance().collisionPirate(this.getCoordinateX(), this.getCoordinateY()).getState() 
-						!= StatePirate.dead)){
-				Island.getInstance().collisionPirate(this.getCoordinateX(), this.getCoordinateY()).setEnergy(0);
-				Island.getInstance().collisionPirate(this.getCoordinateX(), this.getCoordinateY()).setState(StatePirate.dead);
-			}	
-		}catch(CollisionException e){
-			throw new CollisionException(e.getMessage(), e.getExceptionCause());
-		}catch(NullPointerException e){
-			throw new NullPointerException(e.getMessage());
+		final int newX = this.getCoordinateX()+x;
+		final int newY = this.getCoordinateY()+y;
+		this.setPosition(newX, newY);
+		this.moveTo(newX, newY);
+		final Pirate pirate = Island.getInstance().collisionPirate(newX, newY);
+		if(pirate != null && pirate.getState() != StatePirate.dead){
+			pirate.setEnergy(0);
+			pirate.setState(StatePirate.dead);
 		}
 	}
 	

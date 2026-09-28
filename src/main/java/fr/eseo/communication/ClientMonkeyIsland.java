@@ -74,6 +74,10 @@ public class ClientMonkeyIsland extends Thread implements Client{
 		
 		// Utilisation de la socket de connexion du client comme identifiant.
 		this.id = socket.toString();
+
+		// Un seul manager et un seul contrôleur de commandes pour toute la connexion.
+		this.commandControl = new CommandControl();
+		this.action = new Manager(this);
 	}
 
 	/**
@@ -100,14 +104,14 @@ public class ClientMonkeyIsland extends Thread implements Client{
 					// Fermeture de la connexion par le client.
 					break;
 				}
-				this.commandControl = new CommandControl();
-				this.action = new Manager( this, message);
+				this.action.setMessage(message);
 				this.traiteMessage(message);
 			}
 		}catch (IOException ex) {
 			System.err.println("Problème de gestion d'un client (id : " + this.id + ")");
 			System.err.println(ex.getMessage());
 		}finally {
+			this.action.quitte();
 			this.monkeyIsland.fermeConnexion(this);
 		}
 	}
@@ -123,7 +127,6 @@ public class ClientMonkeyIsland extends Thread implements Client{
 			switch (ProtocoleMonkeyIsland.commandeDuMessage(message)){
 			
 				case ProtocoleMonkeyIsland.INSCRIPTION_PIRATE :
-					this.monkeyIsland.inscriptionCanal(this);
 					this.commandControl.setCommand(new CommandInscription(action));
 					this.commandControl.commandAction();
 					break;
@@ -181,6 +184,16 @@ public class ClientMonkeyIsland extends Thread implements Client{
 	@Override
 	public void termineCommunication() {
 		this.communication.termine();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see Client
+	 */
+	@Override
+	public void nouvellePartie() {
+		this.action.nouvellePartie();
 	}
 
 }

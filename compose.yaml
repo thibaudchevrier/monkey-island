@@ -10,3 +10,12 @@ services:
       - server
     ports:
       - "6080:6080"
+
+  # A second player in another browser tab: docker compose --profile duo up --build
+  client2:
+    build: client
+    profiles: [duo]
+    depends_on:
+      - server
+    ports:
+      - "6081:6080"

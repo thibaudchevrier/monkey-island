@@ -37,6 +37,11 @@ public interface Client{
 	public void termineCommunication();
 
 	/**
+	 * Indique au client qu'une nouvelle partie commence.
+	 */
+	public void nouvellePartie();
+
+	/**
 	 * Get the service of MonkeyIsland.
 	 * @return the service
 	 */

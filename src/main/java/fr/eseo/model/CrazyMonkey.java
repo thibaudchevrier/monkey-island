@@ -60,6 +60,8 @@ public class CrazyMonkey extends Monkey{
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		synchronized(Island.LOCK){
 			this.movementMonkey();
+		}
 	}
 }

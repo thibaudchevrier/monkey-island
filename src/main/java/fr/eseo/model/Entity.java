@@ -75,7 +75,20 @@ public abstract class Entity extends Observable{
 		this.setChanged();
 		this.notifyObservers(this.coordinateY );
 	}
-		
+
+	/**
+	 * Move the entity and notify its observers once, with both coordinates set.
+	 *
+	 * @param x the new coordinate x of the entity
+	 * @param y the new coordinate y of the entity
+	 */
+	protected void moveTo(int x, int y){
+		this.coordinateX = x;
+		this.coordinateY = y;
+		this.setChanged();
+		this.notifyObservers();
+	}
+
 	
 	/**
 	 * Set the coordinates of an item and handle the exception of creation.

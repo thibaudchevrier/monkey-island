@@ -35,6 +35,18 @@ public class Island {
 	
 	/** The island. */
 	private static Island island = null;
+
+	/**
+	 * Lock held by every thread that changes the game: client threads (pirates)
+	 * and the Swing timer thread (monkeys, rum, new game).
+	 */
+	public static final Object LOCK = new Object();
+
+	/** Minimal distance between a new pirate and the monkeys. */
+	public static final int SAFE_SPAWN_DISTANCE = 4;
+
+	/** Attempts to find a position away from the monkeys before giving up. */
+	private static final int MAX_SPAWN_ATTEMPTS = 100;
 	
 	/**
 	 * Gets the single instance of Island.
@@ -172,7 +184,9 @@ public class Island {
 		Pirate p = null;
 		if(this.pirates.isEmpty() == false){
 			for(Pirate pirate: this.pirates){
-				if(pirate.getCoordinateX() == x && pirate.getCoordinateY() == y){
+				// A live pirate can stand on a dead one: report the live one first.
+				if(pirate.getCoordinateX() == x && pirate.getCoordinateY() == y
+						&& (p == null || p.getState() == StatePirate.dead || pirate.getState() != StatePirate.dead)){
 					p = pirate;
 				}
 			}
@@ -267,5 +281,54 @@ public class Island {
 			}
 		}while(erreur == 1);
 		return p;
+	}
+
+	/**
+	 * Pick a random free position for a pirate, away from the monkeys when possible,
+	 * so that a new pirate is not caught before its player can react.
+	 * @return p a point
+	 */
+	public Point addPirateEntity(){
+		Point p = this.addEntity();
+		for(int attempt = 0; attempt < MAX_SPAWN_ATTEMPTS && this.nearMonkey(p); attempt++){
+			p = this.addEntity();
+		}
+		return p;
+	}
+
+	/**
+	 * Tell if a position is within SAFE_SPAWN_DISTANCE of a monkey.
+	 * @param p the position
+	 * @return true if a monkey is too close
+	 */
+	private boolean nearMonkey(Point p){
+		for(Monkey monkey : this.monkeys){
+			if(Math.abs(monkey.getCoordinateX() - p.x) + Math.abs(monkey.getCoordinateY() - p.y) < SAFE_SPAWN_DISTANCE){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Start a new game on the same island: hide the treasure somewhere else,
+	 * put the rum back and bring every pirate back to life at a random position.
+	 *
+	 * @param energy the energy given back to every pirate
+	 */
+	public void newGame(int energy){
+		final Treasure treasure = Treasure.getTreasure();
+		treasure.setVisibility(false);
+		final Point treasurePosition = this.addEntity();
+		treasure.setCoordinateX(treasurePosition.x);
+		treasure.setCoordinateY(treasurePosition.y);
+		for(Rhum rhum : this.rhums){
+			rhum.getTimer().stop();
+			rhum.setVisibility(true);
+		}
+		for(Pirate pirate : this.pirates){
+			final Point p = this.addPirateEntity();
+			pirate.respawn(p.x, p.y, energy);
+		}
 	}
 }

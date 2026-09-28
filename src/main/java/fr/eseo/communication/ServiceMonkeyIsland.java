@@ -5,7 +5,10 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import javax.swing.Timer;
+
 import fr.eseo.model.Configuration;
+import fr.eseo.model.Island;
 
 /**
  * Classe de service de MonkeyIsland.
@@ -31,6 +34,16 @@ public final class ServiceMonkeyIsland{
 	 * Le canal de diffusion de MonkeyIsland.
 	 */
 	private CanalDiffusion canal;
+
+	/**
+	 * Délai entre la découverte du trésor et la nouvelle partie (ms).
+	 */
+	private static final int DELAI_NOUVELLE_PARTIE = 3000;
+
+	/**
+	 * Vrai quand le trésor a été trouvé et qu'une nouvelle partie va commencer.
+	 */
+	private boolean nouvellePartieProgrammee = false;
 
 	/**
 	 * Constructeur d'un service de MonkeyIsland.
@@ -138,15 +151,45 @@ public final class ServiceMonkeyIsland{
 	}
 	
 	/**
-	 * Envoie d'un message sur le canal de diffusion.
+	 * Envoie d'un message aux autres clients du canal de diffusion.
 	 *
 	 * @param message le message à envoyer.
+	 * @param expediteur le client qui ne doit pas recevoir le message.
 	 */
-	private void envoieCanal(String message){
-		// Synchronisation : 
+	public void diffuseAutres(String message, Client expediteur){
+		// Synchronisation :
 		// Pour éviter qu'un client ne soit supprimé du canal lors de l'envoi.
 		synchronized (this.canal) {
-			this.canal.envoieClients(message);
+			this.canal.envoieAutresClients(message, expediteur);
+		}
+	}
+
+	/**
+	 * Programme une nouvelle partie, quelques secondes après la découverte du trésor.
+	 *
+	 * <p>Doit être appelé en détenant Island.LOCK.</p>
+	 */
+	public void programmeNouvellePartie(){
+		if (this.nouvellePartieProgrammee) {
+			return;
+		}
+		this.nouvellePartieProgrammee = true;
+		final Timer timer = new Timer(DELAI_NOUVELLE_PARTIE, event -> this.nouvellePartie());
+		timer.setRepeats(false);
+		timer.start();
+	}
+
+	/**
+	 * Lance une nouvelle partie : les clients vident leur île, reçoivent les rhums
+	 * et les singes, puis l'île est réinitialisée (trésor caché, pirates ressuscités).
+	 */
+	private void nouvellePartie(){
+		synchronized (Island.LOCK) {
+			synchronized (this.canal) {
+				this.canal.nouvellePartie();
+			}
+			Island.getInstance().newGame(Configuration.getInstance().getNRJMax());
+			this.nouvellePartieProgrammee = false;
 		}
 	}
 

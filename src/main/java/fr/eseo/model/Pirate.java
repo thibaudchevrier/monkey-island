@@ -128,36 +128,46 @@ public class Pirate extends Entity {
 		if(!((x == -1 && y == 0) || (x == 1 && y == 0) || (x == 0 && y == 1) || (x == 0 && y == -1) || (x == 0 && y == 0))){
 			throw new IllegalArgumentException("MOVEMENT not allowed");
 		} 
-		try{
-			this.setPosition(this.getCoordinateX()+x, this.getCoordinateY()+y);
-			if(this.getState() != StatePirate.dead){
-				if(Island.getInstance().collisionMonkey(this.getCoordinateX()+x, this.getCoordinateY()+y) != null){
-					this.setState(StatePirate.dead);
-					this.setEnergy(0);
-				}else if(Island.getInstance().collisionRhum(this.getCoordinateX()+x, this.getCoordinateY()+y) != null && 
-						Island.getInstance().collisionRhum(this.getCoordinateX()+x, this.getCoordinateY()+y).getVisibility() == true){
-					this.energy = this.energy+Rhum.DEFAULT_ENERGY_QUANTITY;	
-					Island.getInstance().collisionRhum(this.getCoordinateX()+x, this.getCoordinateY()+y).setVisibility(false);
-					Island.getInstance().collisionRhum(this.getCoordinateX()+x, this.getCoordinateY()+y).getTimer().start();
-				} else if(this.getCoordinateX()+x == Treasure.getTreasure().getCoordinateX()
-							&& this.getCoordinateY()+y == Treasure.getTreasure().getCoordinateY()){
-					Treasure.getTreasure().setVisibility(true);
-				} 
-				this.setCoordinateX(this.getCoordinateX()+x);
-				this.setCoordinateY(this.getCoordinateY()+y);
-				if(this.getEnergy() != 0){
-					this.setEnergy(this.energy-1);
-				}
-				if(this.getEnergy() == 0){
-					this.setState(StatePirate.dead);
-				}
-			}
-		}catch(CollisionException e){
-			throw new CollisionException(e.getMessage(), e.getExceptionCause());
-		}catch(NullPointerException e){
-			throw new NullPointerException(e.getMessage());
+		final int newX = this.getCoordinateX()+x;
+		final int newY = this.getCoordinateY()+y;
+		this.setPosition(newX, newY);
+		if(this.getState() == StatePirate.dead){
+			return;
 		}
+		final Island island = Island.getInstance();
+		final Rhum rhum = island.collisionRhum(newX, newY);
+		if(island.collisionMonkey(newX, newY) != null){
+			this.energy = 0;
+		}else if(rhum != null && rhum.getVisibility()){
+			this.energy = this.energy + rhum.getEnergyQuantity();
+			rhum.setVisibility(false);
+			rhum.getTimer().start();
+		}else if(newX == Treasure.getTreasure().getCoordinateX()
+					&& newY == Treasure.getTreasure().getCoordinateY()){
+			Treasure.getTreasure().setVisibility(true);
+		}
+		if(this.energy != 0){
+			this.energy = this.energy - 1;
+		}
+		if(this.energy == 0){
+			this.state = StatePirate.dead;
+		}
+		// A single notification, once position, energy and state are all up to date.
+		this.moveTo(newX, newY);
 	}
-	
+
+	/**
+	 * Bring the pirate back to life at a new position, for a new game.
+	 *
+	 * @param x the coordinate x of the pirate
+	 * @param y the coordinate y of the pirate
+	 * @param energy the energy of the pirate
+	 */
+	public void respawn(int x, int y, int energy){
+		this.energy = energy;
+		this.state = DEFAULT_STATE_PIRATE;
+		this.moveTo(x, y);
+	}
+
 	
 }

@@ -12,6 +12,7 @@ import fr.eseo.model.Island;
 import fr.eseo.model.Monkey;
 import fr.eseo.model.Pirate;
 import fr.eseo.model.Rhum;
+import fr.eseo.model.StatePirate;
 import fr.eseo.model.Treasure;
 
 /**
@@ -353,7 +354,54 @@ public final class ProtocoleMonkeyIsland{
 	}
 
 	/**
-	 * Formate le message d'acceptation de déplacement du pirate. 
+	 * Formate le message d'indication d'un nouveau pirate (pour les autres joueurs).
+	 * @param pirate the new pirate
+	 * @return a message
+	 */
+	public static String formaterNouveauPirate(Pirate pirate){
+		return ProtocoleMonkeyIsland.formateCommande(ProtocoleMonkeyIsland.NOUVEAU_PIRATE) + pirate.getId()
+				+ ProtocoleMonkeyIsland.SEPARATEUR_CHAMPS_OBJET + pirate.getCoordinateX()
+				+ ProtocoleMonkeyIsland.SEPARATEUR_CHAMPS_OBJET + pirate.getCoordinateY();
+	}
+
+	/**
+	 * Formate le message de suppression d'un pirate (mort ou déconnecté).
+	 * @param pirate the pirate to remove
+	 * @return a message
+	 */
+	public static String formaterSuppressionPirate(Pirate pirate){
+		return ProtocoleMonkeyIsland.formateCommande(ProtocoleMonkeyIsland.SUPPRESSION_PIRATE) + pirate.getId();
+	}
+
+	/**
+	 * Formate le message d'indication de tous les pirates vivants, sauf celui du client.
+	 * @param pirates the pirates of the island
+	 * @param pirateClient the pirate of the client receiving the message
+	 * @return a message
+	 */
+	public static String formaterTousPirates(List<Pirate> pirates, Pirate pirateClient){
+		final List<String> autres = new ArrayList<String>();
+		for(Pirate pirate : pirates){
+			if(pirate != pirateClient && pirate.getState() != StatePirate.dead){
+				autres.add(pirate.getId()
+						+ ProtocoleMonkeyIsland.SEPARATEUR_CHAMPS_OBJET + pirate.getCoordinateX()
+						+ ProtocoleMonkeyIsland.SEPARATEUR_CHAMPS_OBJET + pirate.getCoordinateY());
+			}
+		}
+		return ProtocoleMonkeyIsland.formateCommande(ProtocoleMonkeyIsland.TOUS_PIRATES)
+				+ String.join(ProtocoleMonkeyIsland.SEPARATEUR_OBJETS, autres);
+	}
+
+	/**
+	 * Formate le message d'indication d'une nouvelle partie.
+	 * @return a message
+	 */
+	public static String formaterNouvellePartie(){
+		return ProtocoleMonkeyIsland.formateCommande(ProtocoleMonkeyIsland.NOUVELLE_PARTIE);
+	}
+
+	/**
+	 * Formate le message d'acceptation de déplacement du pirate.
 	 * @param pirate the pirate
 	 * @return a message
 	 */
@@ -427,14 +475,12 @@ public final class ProtocoleMonkeyIsland{
 		message = message.concat("/B ");
 		if(rhums.isEmpty() == false){
 			for(Rhum rhum : rhums){
+				final String visibilite = rhum.getVisibility() ? "1" : "0";
+				message = message.concat(
+						+rhum.getCoordinateX()+ProtocoleMonkeyIsland.SEPARATEUR_CHAMPS_OBJET
+						+rhum.getCoordinateY()+ProtocoleMonkeyIsland.SEPARATEUR_CHAMPS_OBJET+visibilite);
 				if(rhums.indexOf(rhum) != rhums.size()-1){
-					message = message.concat(
-							+rhum.getCoordinateX()+ProtocoleMonkeyIsland.SEPARATEUR_CHAMPS_OBJET
-							+rhum.getCoordinateY()+"-1___");
-				}else{
-					message = message.concat(
-							+rhum.getCoordinateX()+ProtocoleMonkeyIsland.SEPARATEUR_CHAMPS_OBJET
-							+rhum.getCoordinateY()+"-1");
+					message = message.concat(ProtocoleMonkeyIsland.SEPARATEUR_OBJETS);
 				}
 			}
 		}

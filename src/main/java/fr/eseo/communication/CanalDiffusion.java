@@ -72,6 +72,33 @@ public class CanalDiffusion {
 		}
 	}
 
+	/**
+	 * Envoyer un message à tous les clients du canal, sauf à son expéditeur.
+	 *
+	 * @param message le message à envoyer.
+	 * @param expediteur le client qui ne doit pas recevoir le message.
+	 */
+	public void envoieAutresClients(String message, Client expediteur){
+		synchronized (this.clients) {
+			for (Client contact : this.clients.values()) {
+				if (contact != expediteur) {
+					contact.envoieMessage(message);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Indiquer à tous les clients du canal qu'une nouvelle partie commence.
+	 */
+	public void nouvellePartie(){
+		synchronized (this.clients) {
+			for (Client contact : this.clients.values()) {
+				contact.nouvellePartie();
+			}
+		}
+	}
+
 }
 
 
