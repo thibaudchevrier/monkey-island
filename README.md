@@ -48,22 +48,67 @@ server container publishes:
 java -jar client/Guybrush_2015_v2.jar
 ```
 
-## Develop
+## Published images
+
+Every release publishes both images to the GitHub Container Registry, for amd64 and arm64:
 
 ```sh
-mvn package -DskipTests        # target/monkey-island.jar
-java -jar target/monkey-island.jar
-mvn test
+docker run -p 13579:13579 ghcr.io/thibaudchevrier/monkey-island-server:1
+docker run -p 6080:6080 -e SERVER_HOST=host.docker.internal ghcr.io/thibaudchevrier/monkey-island-client:1
 ```
 
-No local JDK? Run Maven in a container instead:
+## Develop
+
+Requires JDK 17+ to run Gradle. The build uses a Java 25 toolchain, which Gradle downloads
+if it's missing.
 
 ```sh
-docker run --rm -v "$PWD":/w -w /w maven:3.9-eclipse-temurin-25 mvn test
+./gradlew build                 # compile, test, run every quality check, build the jar
+./gradlew run                   # start the server on port 13579
+./gradlew spotlessApply         # format the code
+```
+
+No local JDK? Run Gradle in a container instead:
+
+```sh
+docker run --rm -v "$PWD":/w -w /w eclipse-temurin:25-jdk ./gradlew build
 ```
 
 The game settings are in `src/main/resources/config.properties`: island size,
 treasure and rum positions, monkeys, energy and speeds. Rebuild after changing them.
+
+### Code quality
+
+`./gradlew check` fails on any of these:
+
+| Tool | Checks | Config |
+| --- | --- | --- |
+| javac `-Xlint:all -Werror` | every compiler warning | `build.gradle.kts` |
+| [Spotless](https://github.com/diffplug/spotless) + google-java-format | formatting | `build.gradle.kts` |
+| [Checkstyle](https://checkstyle.org) | naming, imports, braces, Javadoc on the public API | `config/checkstyle/` |
+| [SpotBugs](https://spotbugs.github.io) | bug patterns (successor of FindBugs) | `config/spotbugs/exclude.xml` |
+| Javadoc doclint | broken documentation | `build.gradle.kts` |
+| JUnit + Mockito | 142 tests, including a TCP integration test | `src/test/` |
+| [JaCoCo](https://www.jacoco.org) | at least 70% line coverage (successor of Emma) | `build.gradle.kts` |
+
+Reports land in `build/reports/`.
+
+### CI and releases
+
+GitHub Actions (`.github/workflows/ci.yml`) runs `./gradlew check` on every push and
+pull request, then builds both Docker images. On `main`, the images are pushed with the
+`main` and `sha-<commit>` tags. Pull requests only build them.
+
+To release, push a [semantic version](https://semver.org) tag:
+
+```sh
+git tag v1.2.0
+git push origin v1.2.0
+```
+
+The pipeline then publishes the images as `1.2.0`, `1.2`, `1` and `latest`, and creates
+a GitHub release with generated notes. Dependabot keeps Gradle dependencies, Docker
+base images and actions up to date.
 
 ### Layout
 
@@ -73,20 +118,18 @@ src/main/java/fr/eseo/
   communication/  sockets, broadcast channel, text protocol
   command/        Command pattern for client commands (register, move)
   model/          Island, Pirate, monkeys, Rhum, Treasure
+config/           Checkstyle and SpotBugs configuration
 client/           Guybrush client jar + Docker image (Xvfb, noVNC)
 docs/             original report, design-pattern slides, test data
 ```
 
 ## Known issues
 
-- **9 of 139 tests fail** with `mvn test`, all in the original test suite. Eight of them
-  also fail in the original Java 8 / PowerMock setup. Some expect error messages that the
-  code never produces. One asserts exact random counts. Others read stubs that were never
-  set up. The ninth depends on test order: the tests share the `Island` and `Treasure`
-  singletons, so a test can see state left over from an earlier one.
 - Guybrush locks its keyboard on every key press until the server replies, even for keys
   that send nothing (Shift, Cmd...). The server works around this by resending your
   position on every monkey move, so a stuck keyboard unlocks within a second.
 - `IslandHeigth` is ignored: the island is always square (`IslandWidth` is read twice).
 - Error messages are never sent to the client (`envoieMessageErreur` is a stub).
 - The drunk pirate state (`StatePirate.drunk`) exists but is never used.
+- `java.util.Observable` is deprecated since Java 9. It is kept on purpose, as the
+  Observer pattern is what the project demonstrates.
