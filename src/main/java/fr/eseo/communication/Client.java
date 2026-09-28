@@ -1,50 +1,43 @@
 package fr.eseo.communication;
 
 /**
- * Interface client du serveur. 
- * 
+ * Interface client du serveur.
+ *
  * @version 2.0
  * @author Matthias Brun
- * 
  */
-public interface Client{
-	/**
-	 * Accesseur à l'identifiant du client.
-	 * 
-	 * @return l'identifiant du client.
-	 *
-	 */
-	public String donneId();
+public interface Client {
+  /**
+   * Accesseur à l'identifiant du client.
+   *
+   * @return l'identifiant du client.
+   */
+  public String donneId();
 
-	/**
-	 * Envoyer un message à un client.
-	 * 
-	 * @param message le message à envoyer.
-	 */
-	public void envoieMessage(String message);
-	
-	/**
-	 * Envoyer un message d'erreur à un client.
-	 * 
-	 * @param message le message à envoyer.
-	 */
-	public void envoieMessageErreur(String message);
-	
-	/**
-	 * termine la communication avec un client.
-	 *
-	 */
-	public void termineCommunication();
+  /**
+   * Envoyer un message à un client.
+   *
+   * @param message le message à envoyer.
+   */
+  public void envoieMessage(String message);
 
-	/**
-	 * Indique au client qu'une nouvelle partie commence.
-	 */
-	public void nouvellePartie();
+  /**
+   * Envoyer un message d'erreur à un client.
+   *
+   * @param message le message à envoyer.
+   */
+  public void envoieMessageErreur(String message);
 
-	/**
-	 * Get the service of MonkeyIsland.
-	 * @return the service
-	 */
-	public ServiceMonkeyIsland getMonkeyIsland();
-	
+  /** termine la communication avec un client. */
+  public void termineCommunication();
+
+  /** Indique au client qu'une nouvelle partie commence. */
+  public void nouvellePartie();
+
+  /**
+   * Get the service of MonkeyIsland.
+   *
+   * @return the service
+   */
+  public ServiceMonkeyIsland getMonkeyIsland();
 }

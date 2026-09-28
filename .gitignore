@@ -1,4 +1,3 @@
-target/
 *.class
 *.log
 
@@ -9,3 +8,8 @@ target/
 .classpath
 .project
 .settings/
+
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar

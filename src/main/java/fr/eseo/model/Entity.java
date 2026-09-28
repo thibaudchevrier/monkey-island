@@ -2,118 +2,116 @@ package fr.eseo.model;
 
 import java.util.Observable;
 
-// 
 /**
- * The Class Character.
+ * An entity of the island: pirate, monkey, rum bottle or treasure.
+ *
+ * <p>Entities are observed by the managers of the clients (Observer pattern). {@link Observable} is
+ * deprecated since Java 9 but kept on purpose: this pattern is what the project demonstrates.
  */
-public abstract class Entity extends Observable{
-	
-	/** The coordinate X. */
-	private int coordinateX;
-	
-	/** The coordinate Y. */
-	private int coordinateY;
-	
-	
-	/**
-	 * Instantiates a new character.
-	 */
-	public Entity(){
-		this.coordinateX = 0;
-		this.coordinateY = 0;
-	}
-	
-	/**
-	 * Instantiates a new character.
-	 * 
-	 * @param x the coordinate x of the entity
-	 * @param y the coordinate y of the entity
-	 */
-	public Entity(int x, int y){
-		this.coordinateX = x;
-		this.coordinateY = y;
-	}
-	
-	
-	/**
-	 * Gets the case character.
-	 *
-	 * @return the case character
-	 */
-	public int getCoordinateX(){
-		return this.coordinateX;
-	}
-	
-	
-	/**
-	 * Gets the case character.
-	 *
-	 * @return the case character
-	 */
-	public int getCoordinateY(){
-		return this.coordinateY;
-	}
-	
-	/**
-	 * Sets the case character.
-	 *
-	 * @param x the coordinate x of the entity
-	 */
-	public void setCoordinateX(int x){
-		this.coordinateX = x;
-		this.setChanged();
-		this.notifyObservers(this.coordinateX);
-	}
-	
-	/**
-	 * Sets the case character.
-	 *
-	 * @param y the coordinate y of the entity
-	 */
-	public void setCoordinateY(int y){
-		this.coordinateY = y;
-		this.setChanged();
-		this.notifyObservers(this.coordinateY );
-	}
+@SuppressWarnings("deprecation")
+public abstract class Entity extends Observable {
 
-	/**
-	 * Move the entity and notify its observers once, with both coordinates set.
-	 *
-	 * @param x the new coordinate x of the entity
-	 * @param y the new coordinate y of the entity
-	 */
-	protected void moveTo(int x, int y){
-		this.coordinateX = x;
-		this.coordinateY = y;
-		this.setChanged();
-		this.notifyObservers();
-	}
+  /** The coordinate X. */
+  private int coordinateX;
 
-	
-	/**
-	 * Set the coordinates of an item and handle the exception of creation.
-	 * 
-	 * @param x the coordinate x of the item
-	 * @param y the coordinate y of the item
-	 * @throws CollisionException exception if collision with an entity or a sea case or limits of island
-	 * @throws NullPointerException the island
-	 */
-	public void setPosition(int x, int y) throws CollisionException, NullPointerException{
-		if(Island.getInstance() == null || Island.getInstance().getCase() == null){
-			 throw new NullPointerException("Island doesn't exsist !!");
-		}else if(x < 0 || x > Island.getInstance().getnbLines()-1 || y < 0 || y > Island.getInstance().getnbRows()-1){
-			 throw new CollisionException("exit island!!",
-			         CollisionException.COLLISION_EXIT_ISLAND);
-		}else if(Island.getInstance().getCase()[x][y].getCaseType() == CaseType.sea){
-			 throw new CollisionException("Case sea not allowed",
-			         CollisionException.COLLISION_SEA);
-		}else if(Island.getInstance().collisionPirate(x, y) != null 
-				&& Island.getInstance().collisionPirate(x, y).getState() != StatePirate.dead && this instanceof Pirate){
-			 throw new CollisionException("Case pirate not allowed",
-			         CollisionException.COLLISION_PIRATE);
-		}else if(Island.getInstance().collisionMonkey(x, y) != null && this instanceof Monkey){
-			 throw new CollisionException("Case monkey not allowed",
-			         CollisionException.COLLISION_MONKEY);
-		}
-	}
+  /** The coordinate Y. */
+  private int coordinateY;
+
+  /** Instantiates a new character. */
+  public Entity() {
+    this.coordinateX = 0;
+    this.coordinateY = 0;
+  }
+
+  /**
+   * Instantiates a new character.
+   *
+   * @param x the coordinate x of the entity
+   * @param y the coordinate y of the entity
+   */
+  public Entity(int x, int y) {
+    this.coordinateX = x;
+    this.coordinateY = y;
+  }
+
+  /**
+   * Gets the case character.
+   *
+   * @return the case character
+   */
+  public int getCoordinateX() {
+    return this.coordinateX;
+  }
+
+  /**
+   * Gets the case character.
+   *
+   * @return the case character
+   */
+  public int getCoordinateY() {
+    return this.coordinateY;
+  }
+
+  /**
+   * Sets the case character.
+   *
+   * @param x the coordinate x of the entity
+   */
+  public void setCoordinateX(int x) {
+    this.coordinateX = x;
+    this.setChanged();
+    this.notifyObservers(this.coordinateX);
+  }
+
+  /**
+   * Sets the case character.
+   *
+   * @param y the coordinate y of the entity
+   */
+  public void setCoordinateY(int y) {
+    this.coordinateY = y;
+    this.setChanged();
+    this.notifyObservers(this.coordinateY);
+  }
+
+  /**
+   * Move the entity and notify its observers once, with both coordinates set.
+   *
+   * @param x the new coordinate x of the entity
+   * @param y the new coordinate y of the entity
+   */
+  protected void moveTo(int x, int y) {
+    this.coordinateX = x;
+    this.coordinateY = y;
+    this.setChanged();
+    this.notifyObservers();
+  }
+
+  /**
+   * Set the coordinates of an item and handle the exception of creation.
+   *
+   * @param x the coordinate x of the item
+   * @param y the coordinate y of the item
+   * @throws CollisionException exception if collision with an entity or a sea case or limits of
+   *     island
+   * @throws NullPointerException the island
+   */
+  public void setPosition(int x, int y) throws CollisionException, NullPointerException {
+    if (Island.getInstance() == null || Island.getInstance().getCase() == null) {
+      throw new NullPointerException("Island doesn't exsist !!");
+    } else if (x < 0
+        || x > Island.getInstance().getnbLines() - 1
+        || y < 0
+        || y > Island.getInstance().getnbRows() - 1) {
+      throw new CollisionException("exit island!!", CollisionException.COLLISION_EXIT_ISLAND);
+    } else if (Island.getInstance().getCase()[x][y].getCaseType() == CaseType.sea) {
+      throw new CollisionException("Case sea not allowed", CollisionException.COLLISION_SEA);
+    } else if (Island.getInstance().collisionPirate(x, y) != null
+        && Island.getInstance().collisionPirate(x, y).getState() != StatePirate.dead
+        && this instanceof Pirate) {
+      throw new CollisionException("Case pirate not allowed", CollisionException.COLLISION_PIRATE);
+    } else if (Island.getInstance().collisionMonkey(x, y) != null && this instanceof Monkey) {
+      throw new CollisionException("Case monkey not allowed", CollisionException.COLLISION_MONKEY);
+    }
+  }
 }

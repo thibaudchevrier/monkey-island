@@ -1,215 +1,186 @@
 package fr.eseo.communication;
 
+import fr.eseo.model.Configuration;
+import fr.eseo.model.Island;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-
 import javax.swing.Timer;
-
-import fr.eseo.model.Configuration;
-import fr.eseo.model.Island;
 
 /**
  * Classe de service de MonkeyIsland.
- * 
- * <p>
- * Ce service consiste à ouvrir une socket d'écoute de connexion pour les clients MonkeyIsland.
- * Quant un client se connecte, un instance de client (ClientMonkeyIsland) est créée pour 
- * gérer les interactions avec ce client.
- * </p>
- * 
+ *
+ * <p>Ce service consiste à ouvrir une socket d'écoute de connexion pour les clients MonkeyIsland.
+ * Quant un client se connecte, un instance de client (ClientMonkeyIsland) est créée pour gérer les
+ * interactions avec ce client.
+ *
  * @version 2.0
  * @author Matthias Brun
- * 
  * @see fr.eseo.communication.ClientMonkeyIsland
  */
-public final class ServiceMonkeyIsland{
-	/**
-	 * La socket de connexion des nouveaux clients.
-	 */
-	private ServerSocket socket; 
+public final class ServiceMonkeyIsland {
+  /** La socket de connexion des nouveaux clients. */
+  private ServerSocket socket;
 
-	/**
-	 * Le canal de diffusion de MonkeyIsland.
-	 */
-	private CanalDiffusion canal;
+  /** Le canal de diffusion de MonkeyIsland. */
+  private CanalDiffusion canal;
 
-	/**
-	 * Délai entre la découverte du trésor et la nouvelle partie (ms).
-	 */
-	private static final int DELAI_NOUVELLE_PARTIE = 3000;
+  /** Délai entre la découverte du trésor et la nouvelle partie (ms). */
+  private static final int DELAI_NOUVELLE_PARTIE = 3000;
 
-	/**
-	 * Vrai quand le trésor a été trouvé et qu'une nouvelle partie va commencer.
-	 */
-	private boolean nouvellePartieProgrammee = false;
+  /** Vrai quand le trésor a été trouvé et qu'une nouvelle partie va commencer. */
+  private boolean nouvellePartieProgrammee = false;
 
-	/**
-	 * Constructeur d'un service de MonkeyIsland.
-	 *
-	 * @throws Exception toute exception.
-	 *
-	 */
-	public ServiceMonkeyIsland() throws Exception{
-		// Création du canal de diffusion.
-		this.canal = new CanalDiffusion();
-		Configuration.getInstance().loading();
-		Island.getInstance().startMonkeys();
-		// Socket à null par défaut.
-		this.socket = null;
+  /**
+   * Constructeur d'un service de MonkeyIsland.
+   *
+   * @throws Exception toute exception.
+   */
+  public ServiceMonkeyIsland() throws Exception {
+    // Création du canal de diffusion.
+    this.canal = new CanalDiffusion();
+    Configuration.getInstance().loading();
+    Island.getInstance().startMonkeys();
+    // Socket à null par défaut.
+    this.socket = null;
+  }
 
-	}
-	
-	/**
-	 * Lancement du service.
-	 * 
-	 * @param port le port d'écoute du service.
-	 *
-	 * @throws Exception toute exception.
-	 */
-	public void lanceService(Integer port) throws Exception{
-		// Ouverture de la socket serveur.
-		try {
-			this.socket = new ServerSocket(port);
-			final InetAddress localeAdresse;
-			localeAdresse = InetAddress.getLocalHost();
-			System.out.println("L'adresse locale est : "+localeAdresse );
-			
-		}catch (Exception ex) {
-			System.err.println("Problème de création de la socket de MonkeyIsland.");
-			throw ex;
-		}
-		
-		// Lancement du service.
-		try {
-			service();
-		}catch (Exception ex) {
-			System.err.println("Problème lors du service de MonkeyIsland.");
-			fermeSocket();
-			throw ex;
-		}
-	}
-	
-	/**
-	 * Fermeture de la socket de MonkeyIsland.
-	 *
-	 * @throws Exception toute exception.
-	 *
-	 */
-	private void fermeSocket() throws Exception{
-		try {
-			this.socket.close();
-		} catch (Exception ex) {
-			System.err.println("Problème de fermeture de la socket " + this.socket);
-			throw ex;
-		}	
-	}
+  /**
+   * Lancement du service.
+   *
+   * @param port le port d'écoute du service.
+   * @throws Exception toute exception.
+   */
+  public void lanceService(Integer port) throws Exception {
+    // Ouverture de la socket serveur.
+    try {
+      this.socket = new ServerSocket(port);
+      final InetAddress localeAdresse;
+      localeAdresse = InetAddress.getLocalHost();
+      System.out.println("L'adresse locale est : " + localeAdresse);
 
-	/**
-	 * Service de MonkeyIsland.
-	 *
-	 * @throws IOException exception d'entrée/sortie de fichier (socket).
-	 *
-	 * @see ClientMonkeyIsland
-	 *
-	 */
-	private void service() throws IOException{
-		while (true) {
-			// Création d'une socket de communication avec un client qui se connecte à MonkeyIsland.
-			final Socket socketClient = this.socket.accept();
+    } catch (Exception ex) {
+      System.err.println("Problème de création de la socket de MonkeyIsland.");
+      throw ex;
+    }
 
-			// Création d'un client MonkeyIsland.
-			final ClientMonkeyIsland client = new ClientMonkeyIsland(this, socketClient);
+    // Lancement du service.
+    try {
+      service();
+    } catch (Exception ex) {
+      System.err.println("Problème lors du service de MonkeyIsland.");
+      fermeSocket();
+      throw ex;
+    }
+  }
 
-			// Lancement d'un thread de service au client.
-			client.lanceService();
-			
-			System.out.println("Ouverture connexion client (id : " + client.donneId() + ")");
-		}
-	}
+  /**
+   * Fermeture de la socket de MonkeyIsland.
+   *
+   * @throws Exception toute exception.
+   */
+  private void fermeSocket() throws Exception {
+    try {
+      this.socket.close();
+    } catch (Exception ex) {
+      System.err.println("Problème de fermeture de la socket " + this.socket);
+      throw ex;
+    }
+  }
 
-	/**
-	 * Inscrit un client au canal de diffusion de MonkeyIsland.
-	 * 
-	 * @param client le client concerné.
-	 */
-	public void inscriptionCanal(Client client){
-		// Synchronization :
-		// Pour éviter d'ajouter un client alors qu'un envoi de message est en cours.
-		synchronized (this.canal) {
-			this.canal.ajouteClient(client);
-		}
-	}	
-	
-	/**
-	 * 
-	 * @return canal diffusion.
-	 */
-		
-	public CanalDiffusion getCanalDiffusion(){	
-		return this.canal;
-	}
-	
-	/**
-	 * Envoie d'un message aux autres clients du canal de diffusion.
-	 *
-	 * @param message le message à envoyer.
-	 * @param expediteur le client qui ne doit pas recevoir le message.
-	 */
-	public void diffuseAutres(String message, Client expediteur){
-		// Synchronisation :
-		// Pour éviter qu'un client ne soit supprimé du canal lors de l'envoi.
-		synchronized (this.canal) {
-			this.canal.envoieAutresClients(message, expediteur);
-		}
-	}
+  /**
+   * Service de MonkeyIsland.
+   *
+   * @throws IOException exception d'entrée/sortie de fichier (socket).
+   * @see ClientMonkeyIsland
+   */
+  private void service() throws IOException {
+    while (true) {
+      // Création d'une socket de communication avec un client qui se connecte à MonkeyIsland.
+      final Socket socketClient = this.socket.accept();
 
-	/**
-	 * Programme une nouvelle partie, quelques secondes après la découverte du trésor.
-	 *
-	 * <p>Doit être appelé en détenant Island.LOCK.</p>
-	 */
-	public void programmeNouvellePartie(){
-		if (this.nouvellePartieProgrammee) {
-			return;
-		}
-		this.nouvellePartieProgrammee = true;
-		final Timer timer = new Timer(DELAI_NOUVELLE_PARTIE, event -> this.nouvellePartie());
-		timer.setRepeats(false);
-		timer.start();
-	}
+      // Création d'un client MonkeyIsland.
+      final ClientMonkeyIsland client = new ClientMonkeyIsland(this, socketClient);
 
-	/**
-	 * Lance une nouvelle partie : les clients vident leur île, reçoivent les rhums
-	 * et les singes, puis l'île est réinitialisée (trésor caché, pirates ressuscités).
-	 */
-	private void nouvellePartie(){
-		synchronized (Island.LOCK) {
-			synchronized (this.canal) {
-				this.canal.nouvellePartie();
-			}
-			Island.getInstance().newGame(Configuration.getInstance().getNRJMax());
-			this.nouvellePartieProgrammee = false;
-		}
-	}
+      // Lancement d'un thread de service au client.
+      client.lanceService();
 
-	/**
-	 * Fermeture d'une connexion avec un client.
-	 *
-	 * @param client le client concerné.
-	 */
-	public void fermeConnexion(Client client) {
-		System.out.println("Fermeture connexion client (id : " + client.donneId() + ")");
+      System.out.println("Ouverture connexion client (id : " + client.donneId() + ")");
+    }
+  }
 
-		// Synchronisation :
-		// Pour éviter qu'une connexion soit fermée lors de l'envoi d'un message sur le canal du client.
-		synchronized (this.canal) {
-			// Suppression du client dans le canal.
-			this.canal.enleveClient(client);
+  /**
+   * Inscrit un client au canal de diffusion de MonkeyIsland.
+   *
+   * @param client le client concerné.
+   */
+  public void inscriptionCanal(Client client) {
+    // Synchronization :
+    // Pour éviter d'ajouter un client alors qu'un envoi de message est en cours.
+    synchronized (this.canal) {
+      this.canal.ajouteClient(client);
+    }
+  }
 
-			client.termineCommunication();
-		}
-	}
+  /**
+   * Envoie d'un message aux autres clients du canal de diffusion.
+   *
+   * @param message le message à envoyer.
+   * @param expediteur le client qui ne doit pas recevoir le message.
+   */
+  public void diffuseAutres(String message, Client expediteur) {
+    // Synchronisation :
+    // Pour éviter qu'un client ne soit supprimé du canal lors de l'envoi.
+    synchronized (this.canal) {
+      this.canal.envoieAutresClients(message, expediteur);
+    }
+  }
+
+  /**
+   * Programme une nouvelle partie, quelques secondes après la découverte du trésor.
+   *
+   * <p>Doit être appelé en détenant Island.LOCK.
+   */
+  public void programmeNouvellePartie() {
+    if (this.nouvellePartieProgrammee) {
+      return;
+    }
+    this.nouvellePartieProgrammee = true;
+    final Timer timer = new Timer(DELAI_NOUVELLE_PARTIE, event -> this.nouvellePartie());
+    timer.setRepeats(false);
+    timer.start();
+  }
+
+  /**
+   * Lance une nouvelle partie : les clients vident leur île, reçoivent les rhums et les singes,
+   * puis l'île est réinitialisée (trésor caché, pirates ressuscités).
+   */
+  private void nouvellePartie() {
+    synchronized (Island.LOCK) {
+      synchronized (this.canal) {
+        this.canal.nouvellePartie();
+      }
+      Island.getInstance().newGame(Configuration.getInstance().getNRJMax());
+      this.nouvellePartieProgrammee = false;
+    }
+  }
+
+  /**
+   * Fermeture d'une connexion avec un client.
+   *
+   * @param client le client concerné.
+   */
+  public void fermeConnexion(Client client) {
+    System.out.println("Fermeture connexion client (id : " + client.donneId() + ")");
+
+    // Synchronisation :
+    // Pour éviter qu'une connexion soit fermée lors de l'envoi d'un message sur le canal du client.
+    synchronized (this.canal) {
+      // Suppression du client dans le canal.
+      this.canal.enleveClient(client);
+
+      client.termineCommunication();
+    }
+  }
 }
-

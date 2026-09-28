@@ -4,101 +4,91 @@ import java.util.Hashtable;
 import java.util.Iterator;
 
 /**
- * Classe canal de diffusion du serveur. 
- * 
- * <p>La diffusion des informations de modification du stock se fait via un canal de diffusion.</p>
+ * Classe canal de diffusion du serveur.
+ *
+ * <p>La diffusion des informations de modification du stock se fait via un canal de diffusion.
  *
  * @version 2.0
  * @author Matthias Brun
- * 
  */
 public class CanalDiffusion {
-	/**
-	 * L'ensemble des clients du canal.
-	 */
-	private Hashtable<String, Client> clients;
+  /** L'ensemble des clients du canal. */
+  private Hashtable<String, Client> clients;
 
-	/**
-	 * Constructeur d'un canal de diffusion.
-	 */
-	public CanalDiffusion(){
-		this.clients = new Hashtable<String, Client>();
-	}
+  /** Constructeur d'un canal de diffusion. */
+  public CanalDiffusion() {
+    this.clients = new Hashtable<String, Client>();
+  }
 
-	/**
-	 * Ajout d'un client dans le canal.
-	 *
-	 * @param client le client à ajouter dans le canal.
-	 */
-	public void ajouteClient(Client client){
-		// Si le client n'est pas déjà dans le canal.
-		if (this.clients.get(client.donneId()) == null) {
-			this.clients.put(client.donneId(), client);
-		}
-	}
+  /**
+   * Ajout d'un client dans le canal.
+   *
+   * @param client le client à ajouter dans le canal.
+   */
+  public void ajouteClient(Client client) {
+    // Si le client n'est pas déjà dans le canal.
+    if (this.clients.get(client.donneId()) == null) {
+      this.clients.put(client.donneId(), client);
+    }
+  }
 
-	/**
-	 * Suppression d'un client dans le canal.
-	 *
-	 * @param client le client à enlever du canal.
-	 */
-	public void enleveClient(Client client){
-		// Si le client est dans le canal.
-		if (this.clients.get(client.donneId()) != null) {
-			this.clients.remove(client.donneId());
-		}
-	}
+  /**
+   * Suppression d'un client dans le canal.
+   *
+   * @param client le client à enlever du canal.
+   */
+  public void enleveClient(Client client) {
+    // Si le client est dans le canal.
+    if (this.clients.get(client.donneId()) != null) {
+      this.clients.remove(client.donneId());
+    }
+  }
 
-	/**
-	 * Envoyer un message à tous les clients sur le canal de diffusion.
-	 *
-	 * @param message le message à envoyer.
-	 */
-	public void envoieClients(String message){
-		// Synchronisation :
-		// Protéger l'accés par plusieurs thread sur l'ensemble des clients.
-		// (cf. java.util.ConcurrentModificationException)
-		synchronized (this.clients) {
+  /**
+   * Envoyer un message à tous les clients sur le canal de diffusion.
+   *
+   * @param message le message à envoyer.
+   */
+  public void envoieClients(String message) {
+    // Synchronisation :
+    // Protéger l'accés par plusieurs thread sur l'ensemble des clients.
+    // (cf. java.util.ConcurrentModificationException)
+    synchronized (this.clients) {
 
-			// Pour chaque client.
-			final Iterator<String> iter = this.clients.keySet().iterator();
+      // Pour chaque client.
+      final Iterator<String> iter = this.clients.keySet().iterator();
 
-			while (iter.hasNext()) {
-				final Client contact = this.clients.get(iter.next());
+      while (iter.hasNext()) {
+        final Client contact = this.clients.get(iter.next());
 
-				// Envoi du message.
-				contact.envoieMessage(message);
-			}
-		}
-	}
+        // Envoi du message.
+        contact.envoieMessage(message);
+      }
+    }
+  }
 
-	/**
-	 * Envoyer un message à tous les clients du canal, sauf à son expéditeur.
-	 *
-	 * @param message le message à envoyer.
-	 * @param expediteur le client qui ne doit pas recevoir le message.
-	 */
-	public void envoieAutresClients(String message, Client expediteur){
-		synchronized (this.clients) {
-			for (Client contact : this.clients.values()) {
-				if (contact != expediteur) {
-					contact.envoieMessage(message);
-				}
-			}
-		}
-	}
+  /**
+   * Envoyer un message à tous les clients du canal, sauf à son expéditeur.
+   *
+   * @param message le message à envoyer.
+   * @param expediteur le client qui ne doit pas recevoir le message.
+   */
+  public void envoieAutresClients(String message, Client expediteur) {
+    synchronized (this.clients) {
+      for (Client contact : this.clients.values()) {
+        if (contact != expediteur) {
+          contact.envoieMessage(message);
+        }
+      }
+    }
+  }
 
-	/**
-	 * Indiquer à tous les clients du canal qu'une nouvelle partie commence.
-	 */
-	public void nouvellePartie(){
-		synchronized (this.clients) {
-			for (Client contact : this.clients.values()) {
-				contact.nouvellePartie();
-			}
-		}
-	}
-
+  /** Indiquer à tous les clients du canal qu'une nouvelle partie commence. */
+  public void nouvellePartie() {
+    synchronized (this.clients) {
+      for (Client contact : this.clients.values()) {
+        contact.nouvellePartie();
+      }
+    }
+  }
 }
-
-

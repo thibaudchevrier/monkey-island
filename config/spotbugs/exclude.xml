@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SpotBugs findings accepted by design. Each exclusion is scoped and explained;
+  anything else fails the build.
+-->
+<FindBugsFilter
+    xmlns="https://github.com/spotbugs/filter/3.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://github.com/spotbugs/filter/3.0.0 https://raw.githubusercontent.com/spotbugs/spotbugs/3.1.0/spotbugs/etc/findbugsfilter.xsd">
+
+  <!--
+    The model is a shared, mutable object graph: the island hands out its lists of
+    pirates, monkeys and rum, and the managers keep references to their client and
+    pirate. Defensive copies would break the Observer design the game relies on.
+  -->
+  <Match>
+    <Or>
+      <Package name="fr.eseo.model"/>
+      <Package name="fr.eseo.command"/>
+      <Package name="fr.eseo.communication"/>
+    </Or>
+    <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+  </Match>
+
+  <!-- Singletons return their shared instance: that is their purpose. -->
+  <Match>
+    <Or>
+      <Class name="fr.eseo.model.Island"/>
+      <Class name="fr.eseo.model.Treasure"/>
+    </Or>
+    <Bug pattern="MS_EXPOSE_REP"/>
+  </Match>
+
+  <!-- Island keeps a public constructor so that tests can use a fresh island. -->
+  <Match>
+    <Class name="fr.eseo.model.Island"/>
+    <Bug pattern="SING_SINGLETON_HAS_NONPRIVATE_CONSTRUCTOR"/>
+  </Match>
+
+  <!--
+    Island.LOCK is the single, public game lock shared by client threads and the Swing
+    timer thread. The detector targets libraries, where untrusted code could hold the
+    lock; this is a standalone server.
+  -->
+  <Match>
+    <Bug pattern="USO_UNSAFE_OBJECT_SYNCHRONIZATION"/>
+  </Match>
+</FindBugsFilter>

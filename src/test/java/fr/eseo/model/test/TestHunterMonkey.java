@@ -1,14 +1,8 @@
 package fr.eseo.model.test;
 
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import static org.junit.Assert.*;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
 import static org.mockito.Mockito.*;
+
 import fr.eseo.model.Case;
 import fr.eseo.model.CaseType;
 import fr.eseo.model.CollisionException;
@@ -20,336 +14,330 @@ import fr.eseo.model.Pirate;
 import fr.eseo.model.Rhum;
 import fr.eseo.model.StatePirate;
 import fr.eseo.model.Treasure;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
-/**
- * The Class TestPirate.
- */
+/** The Class TestPirate. */
 public class TestHunterMonkey {
 
-	/** Static mock of the Island singleton, released after each test. */
-	private MockedStatic<Island> islandStatic;
+  /** Static mock of the Island singleton, released after each test. */
+  private MockedStatic<Island> islandStatic;
 
-	/**  Largeur de l'île. */
-	private static final int NB_ROWS = 30;
-	
-	/**  Longueur de l'île. */
-	private static final int NB_LINES = 30;
-	
-	/**  Coordonnée X d'un pirate. */
-	private static final int X_PIRATE = 11;
-	
-	/**  Coordonnée Y d'un pirate. */
-	private static final int Y_PIRATE = 10;
-	
-	/**  Coordonnée X d'un singe. */
-	private static final int X_HUNTER = 10;
-	
-	/**  Coordonnée Y d'un singe. */
-	private static final int Y_HUNTER = 10;
-	
-	/**  Coordonnée X d'un singe. */
-	private static final int X_HUNTER2 = 20;
-	
-	/**  Coordonnée Y d'un singe. */
-	private static final int Y_HUNTER2 = 20;
-	
-	/**  Coordonnée X d'un singe. */
-	private static final int X_MONKEY = 10;
-	
-	/**  Coordonnée Y d'un singe. */
-	private static final int Y_MONKEY = 11;
-	
-	/** The pirate. */
-	private Pirate pirate;
-	
-	/** The monkey. */
-	private CrazyMonkey monkey;
-	
-	private HunterMonkey hunter;
-	
-	private HunterMonkey hunter2;
-	/** The rhum. */
-	private Rhum rhum;
-	
-	/** The monkey island. */
-	private Island monkeyIsland;
+  /** Largeur de l'île. */
+  private static final int NB_ROWS = 30;
 
-	
-	/** Plateau de jeu */
-	private Case[][] plateau = new Case[NB_ROWS][NB_LINES];
-	
-	/**
-	 * Sets the up.
-	 *
-	 * @throws Exception the exception
-	 */
-	@Before
-	public void setUp(){
-		this.monkeyIsland = mock(Island.class);
-	    this.islandStatic = Mockito.mockStatic(Island.class);
-		when(Island.getInstance()).thenReturn(monkeyIsland);
-		Fixtures.resetTreasure();
-		when(this.monkeyIsland.getnbLines()).thenReturn(NB_LINES);
-		when(this.monkeyIsland.getnbRows()).thenReturn(NB_ROWS);
-		when(this.monkeyIsland.getCase()).thenReturn(plateau);
-		
-		for(int i = 0; i< NB_LINES; i++){
-			for(int j = 0; j< NB_ROWS; j++){
-				if(i==21 && j==20){
-					this.plateau[i][j] = new Case(i, j, CaseType.sea);
-				}else{
-					this.plateau[i][j] = new Case(i, j, CaseType.earth);
-				}
-			}
-		}
-		
-		this.pirate = new Pirate(X_PIRATE, Y_PIRATE);
-		this.monkey = new CrazyMonkey(X_MONKEY, Y_MONKEY);
-		this.hunter = new HunterMonkey(Monkey.DEFAULT_SPEED, X_HUNTER, Y_HUNTER);
-		this.hunter2 = new HunterMonkey(Monkey.DEFAULT_SPEED, X_HUNTER2, Y_HUNTER2);
-		this.rhum = new Rhum(true);
-	}
-	
-	/**
-	 * Tear down.
-	 *
-	 * @throws Exception the exception
-	 */
-	@After
-	public void tearDown() throws Exception 
-	{
-		this.islandStatic.close();
-	}
-	
-	/** 
-	 * 
-	 * @throws Exception
-	 * Teste le déplacement vers le bas du pirate
-	 */
-	@Test
-	public void testMovementHunterDown(){
-		int[] tab = {0 ,1};
-		try{
-			this.hunter.movementHunterMonkey(tab);
-		}catch(Exception e){
-			fail("Should not have thrown any exception");
-		} 
-		assertEquals("erreur mouvement ", 11, this.hunter.getCoordinateY());
-	}
-	
-	/**
-	 * Test movement up.
-	 *
-	 * @throws Exception Teste le déplacement vers le haut du pirate
-	 */
-	@Test
-	public void testMovementHunterUp(){
-		int[] tab = {0 ,-1};
-		try {
-			this.hunter.movementHunterMonkey(tab);
-		} catch (Exception e) {
-			fail("Should not have thrown any exception");
-		}
-		
-		assertEquals("erreur mouvement ", 9, this.hunter.getCoordinateY());
-	}
+  /** Longueur de l'île. */
+  private static final int NB_LINES = 30;
 
-	/**
-	 * Test movement left.
-	 *
-	 * @throws Exception Teste le déplacement vers la gauche du pirate
-	 */
-	@Test
-	public void testMovementHunterLeft(){
-		int[] tab = {-1 ,0};
-		try{
-			this.hunter.movementHunterMonkey(tab);
-		} catch(Exception e){
-			fail("Should not have thrown any exception");
-		}
-		assertEquals("error movement ", 9, this.hunter.getCoordinateX());
-	}
-	
-	/** 
-	 * 
-	 * @throws Exception
-	 * Teste le déplacement vers la droite du pirate
-	 */
-	@Test
-	public void testMovementHunterRight() {
-		int[] tab = {1 ,0};
-		try{
-			this.hunter.movementHunterMonkey(tab);
-		} catch(Exception e){
-			fail("Should not have thrown any exception");
-		}
-		assertEquals("error movement ", 11, this.hunter.getCoordinateX());
-	}
-	
-	/** 
-	 * 
-	 * @throws Exception
-	 * Teste le déplacement de (0,0)
-	 */
-	@Test
-	public void testMovementHunterZero(){
-		int[] tab = {0 ,0};
-		try{
-			this.hunter.movementHunterMonkey(tab);
-		} catch(Exception e){
-			fail("Should not have thrown any exception");
-		}
-	
-		assertEquals("error movement ", 10, this.hunter.getCoordinateX());
-		assertEquals("error movement ", 10, this.hunter.getCoordinateY());
-	}
-	
-	/**
-	 * Test movement not allowed.
-	 *
-	 * @throws Exception Teste qu'on ne peut pas se déplacer de 2 cases
-	 */
-	@Test
-	public void testMovementHunterNotAllowed(){
-		int[] tab = {2 ,0};
-		try{
-			this.hunter.movementHunterMonkey(tab);
-			fail("movement 2 impossible");
-		}catch (Exception e){
-			assertTrue(e.getMessage().contains("MOVEMENT not allowed"));
-		}
-		
-		assertEquals("Movement impossible X", 10, this.hunter.getCoordinateX());
-		assertEquals("Movement impossible Y", 10, this.hunter.getCoordinateY());
-		
-	}
-	
-	/**
-	 * Test movement out of limits.
-	 *
-	 * @throws Exception Teste qu'on ne peut pas sortir des limites de l'île
-	 */
-	@Test
-	public void testMovementHunterOutOfLimits(){
-		this.hunter.setCoordinateX(29);
-		int[] tab = {1 ,0};
-		try{
-			this.hunter.movementHunterMonkey(tab);
-			fail("Exit island");
-		}catch (CollisionException e){
-			assertEquals(CollisionException.COLLISION_EXIT_ISLAND, e.getExceptionCause());
-		}
+  /** Coordonnée X d'un pirate. */
+  private static final int X_PIRATE = 11;
 
-		assertEquals("Error exit island X", 29, this.hunter.getCoordinateX());
-		assertEquals("Error exit island Y", 10, this.hunter.getCoordinateY());
-		
-	}
-	
-	/** 
-	 * 
-	 * @throws Exception
-	 * Teste qu'un pirate meurt après collision avec un singe
-	 */
-	@Test
-	public void testDeathPirate(){
-		int[] tab = {1 ,0};
-		when(this.monkeyIsland.collisionPirate(this.hunter.getCoordinateX()+1, this.hunter.getCoordinateY())).thenReturn(pirate);
-		
-		try {
-			this.hunter.movementHunterMonkey(tab);
-		}catch(Exception e){
-			fail("Should not have thrown any exception");
-		}
-		
-		// The hunter now stands where the pirate was.
-		assertEquals("error position", X_PIRATE, this.hunter.getCoordinateX());
-		assertEquals("error state", StatePirate.dead, this.pirate.getState());
-		assertEquals("error energy", 0, this.pirate.getEnergy());
-	}
-	
-	/**
-	 * 
-	 * @throws Exception
-	 * Méthode qui vérifie que le pirate ne bouge pas lorsqu'il rentre en collision 
-	 * avec un autre pirate.
-	 */
-	@Test
-	public void testMovementHunterByCrazy(){
-		
-		when(this.monkeyIsland.collisionMonkey(this.hunter.getCoordinateX(), this.hunter.getCoordinateY()+1)).thenReturn(monkey);
-		int[] tab = {0 ,1};
-		try {
-			this.hunter.movementHunterMonkey(tab);
-			fail("Should return monkey");
-		}catch(CollisionException e){
-			assertEquals(CollisionException.COLLISION_MONKEY, e.getExceptionCause());
-		}
-		
-		assertEquals("Error Collision Pirate X", 10, this.hunter.getCoordinateX());
-		assertEquals("Error Collision Pirate Y", 10, this.hunter.getCoordinateY());
-	}
-	
-	
-	/**
-	 * 
-	 * @throws Exception
-	 * Méthode qui teste la détection du trésor par le pirate.
-	 */
-	@Test
-	public void testMovementHunterByTreasure(){
-		
-		when(this.monkeyIsland.collisionPirate(this.hunter.getCoordinateX(), this.hunter.getCoordinateY()+1)).thenReturn(null);
-		when(this.monkeyIsland.collisionMonkey(this.hunter.getCoordinateX(), this.hunter.getCoordinateY()+1)).thenReturn(null);
-		int[] tab = {0 ,1};
-		try{
-			Treasure.getTreasure().setCoordinateX(this.hunter.getCoordinateX());
-			Treasure.getTreasure().setCoordinateY(this.hunter.getCoordinateY()+1);
-			this.hunter.movementHunterMonkey(tab);
-		}catch(Exception e){
-			fail("Should not have thrown any exception");
-		}
-		assertFalse(Treasure.getTreasure().getVisibility());
-	}
-	
-	/**
-	 * Test movement on a sea case.
-	 *
-	 * @throws Exception
-	 */
-	@Test
-	public void testMovementPirateOnSeaCase(){
-		int[] tab = {1 ,0};
-		try{
-			this.hunter2.movementHunterMonkey(tab);
-			fail("Should return sea case");
-		}catch (CollisionException e){
-			assertEquals(CollisionException.COLLISION_SEA, e.getExceptionCause());
-		}
+  /** Coordonnée Y d'un pirate. */
+  private static final int Y_PIRATE = 10;
 
-		assertEquals("Error exit island X", 20, this.hunter2.getCoordinateX());
-		assertEquals("Error exit island Y", 20, this.hunter2.getCoordinateY());
-		
-	}
-	
-	/**
-	 * Test movement on a rhum case.
-	 *
-	 * @throws Exception
-	 */
-	@Test
-	public void testMovementPirateOnRhumCase(){
-		
-		when(this.monkeyIsland.collisionRhum(this.hunter2.getCoordinateX(), this.hunter2.getCoordinateY()+1)).thenReturn(rhum);
-		int[] tab = {0 ,1};
-		try{
-			this.rhum.setPosition(20, 21);
-			this.hunter2.movementHunterMonkey(tab);
-		}catch (Exception e){
-			fail("Should not have thrown any exception");
-		}
+  /** Coordonnée X d'un singe. */
+  private static final int X_HUNTER = 10;
 
-		assertEquals("error visibility rhum", true, this.rhum.getVisibility());
-	}
-	
+  /** Coordonnée Y d'un singe. */
+  private static final int Y_HUNTER = 10;
 
+  /** Coordonnée X d'un singe. */
+  private static final int X_HUNTER2 = 20;
+
+  /** Coordonnée Y d'un singe. */
+  private static final int Y_HUNTER2 = 20;
+
+  /** Coordonnée X d'un singe. */
+  private static final int X_MONKEY = 10;
+
+  /** Coordonnée Y d'un singe. */
+  private static final int Y_MONKEY = 11;
+
+  /** The pirate. */
+  private Pirate pirate;
+
+  /** The monkey. */
+  private CrazyMonkey monkey;
+
+  private HunterMonkey hunter;
+
+  private HunterMonkey hunter2;
+
+  /** The rhum. */
+  private Rhum rhum;
+
+  /** The monkey island. */
+  private Island monkeyIsland;
+
+  /** Plateau de jeu */
+  private Case[][] plateau = new Case[NB_ROWS][NB_LINES];
+
+  /**
+   * Sets the up.
+   *
+   * @throws Exception the exception
+   */
+  @Before
+  public void setUp() {
+    this.monkeyIsland = mock(Island.class);
+    this.islandStatic = Mockito.mockStatic(Island.class);
+    when(Island.getInstance()).thenReturn(monkeyIsland);
+    Fixtures.resetTreasure();
+    when(this.monkeyIsland.getnbLines()).thenReturn(NB_LINES);
+    when(this.monkeyIsland.getnbRows()).thenReturn(NB_ROWS);
+    when(this.monkeyIsland.getCase()).thenReturn(plateau);
+
+    for (int i = 0; i < NB_LINES; i++) {
+      for (int j = 0; j < NB_ROWS; j++) {
+        if (i == 21 && j == 20) {
+          this.plateau[i][j] = new Case(i, j, CaseType.sea);
+        } else {
+          this.plateau[i][j] = new Case(i, j, CaseType.earth);
+        }
+      }
+    }
+
+    this.pirate = new Pirate(X_PIRATE, Y_PIRATE);
+    this.monkey = new CrazyMonkey(X_MONKEY, Y_MONKEY);
+    this.hunter = new HunterMonkey(Monkey.DEFAULT_SPEED, X_HUNTER, Y_HUNTER);
+    this.hunter2 = new HunterMonkey(Monkey.DEFAULT_SPEED, X_HUNTER2, Y_HUNTER2);
+    this.rhum = new Rhum(true);
+  }
+
+  /**
+   * Tear down.
+   *
+   * @throws Exception the exception
+   */
+  @After
+  public void tearDown() throws Exception {
+    this.islandStatic.close();
+  }
+
+  /**
+   * @throws Exception Teste le déplacement vers le bas du pirate
+   */
+  @Test
+  public void testMovementHunterDown() {
+    int[] tab = {0, 1};
+    try {
+      this.hunter.movementHunterMonkey(tab);
+    } catch (Exception e) {
+      fail("Should not have thrown any exception");
+    }
+    assertEquals("erreur mouvement ", 11, this.hunter.getCoordinateY());
+  }
+
+  /**
+   * Test movement up.
+   *
+   * @throws Exception Teste le déplacement vers le haut du pirate
+   */
+  @Test
+  public void testMovementHunterUp() {
+    int[] tab = {0, -1};
+    try {
+      this.hunter.movementHunterMonkey(tab);
+    } catch (Exception e) {
+      fail("Should not have thrown any exception");
+    }
+
+    assertEquals("erreur mouvement ", 9, this.hunter.getCoordinateY());
+  }
+
+  /**
+   * Test movement left.
+   *
+   * @throws Exception Teste le déplacement vers la gauche du pirate
+   */
+  @Test
+  public void testMovementHunterLeft() {
+    int[] tab = {-1, 0};
+    try {
+      this.hunter.movementHunterMonkey(tab);
+    } catch (Exception e) {
+      fail("Should not have thrown any exception");
+    }
+    assertEquals("error movement ", 9, this.hunter.getCoordinateX());
+  }
+
+  /**
+   * @throws Exception Teste le déplacement vers la droite du pirate
+   */
+  @Test
+  public void testMovementHunterRight() {
+    int[] tab = {1, 0};
+    try {
+      this.hunter.movementHunterMonkey(tab);
+    } catch (Exception e) {
+      fail("Should not have thrown any exception");
+    }
+    assertEquals("error movement ", 11, this.hunter.getCoordinateX());
+  }
+
+  /**
+   * @throws Exception Teste le déplacement de (0,0)
+   */
+  @Test
+  public void testMovementHunterZero() {
+    int[] tab = {0, 0};
+    try {
+      this.hunter.movementHunterMonkey(tab);
+    } catch (Exception e) {
+      fail("Should not have thrown any exception");
+    }
+
+    assertEquals("error movement ", 10, this.hunter.getCoordinateX());
+    assertEquals("error movement ", 10, this.hunter.getCoordinateY());
+  }
+
+  /**
+   * Test movement not allowed.
+   *
+   * @throws Exception Teste qu'on ne peut pas se déplacer de 2 cases
+   */
+  @Test
+  public void testMovementHunterNotAllowed() {
+    int[] tab = {2, 0};
+    try {
+      this.hunter.movementHunterMonkey(tab);
+      fail("movement 2 impossible");
+    } catch (Exception e) {
+      assertTrue(e.getMessage().contains("MOVEMENT not allowed"));
+    }
+
+    assertEquals("Movement impossible X", 10, this.hunter.getCoordinateX());
+    assertEquals("Movement impossible Y", 10, this.hunter.getCoordinateY());
+  }
+
+  /**
+   * Test movement out of limits.
+   *
+   * @throws Exception Teste qu'on ne peut pas sortir des limites de l'île
+   */
+  @Test
+  public void testMovementHunterOutOfLimits() {
+    this.hunter.setCoordinateX(29);
+    int[] tab = {1, 0};
+    try {
+      this.hunter.movementHunterMonkey(tab);
+      fail("Exit island");
+    } catch (CollisionException e) {
+      assertEquals(CollisionException.COLLISION_EXIT_ISLAND, e.getExceptionCause());
+    }
+
+    assertEquals("Error exit island X", 29, this.hunter.getCoordinateX());
+    assertEquals("Error exit island Y", 10, this.hunter.getCoordinateY());
+  }
+
+  /**
+   * @throws Exception Teste qu'un pirate meurt après collision avec un singe
+   */
+  @Test
+  public void testDeathPirate() {
+    int[] tab = {1, 0};
+    when(this.monkeyIsland.collisionPirate(
+            this.hunter.getCoordinateX() + 1, this.hunter.getCoordinateY()))
+        .thenReturn(pirate);
+
+    try {
+      this.hunter.movementHunterMonkey(tab);
+    } catch (Exception e) {
+      fail("Should not have thrown any exception");
+    }
+
+    // The hunter now stands where the pirate was.
+    assertEquals("error position", X_PIRATE, this.hunter.getCoordinateX());
+    assertEquals("error state", StatePirate.dead, this.pirate.getState());
+    assertEquals("error energy", 0, this.pirate.getEnergy());
+  }
+
+  /**
+   * @throws Exception Méthode qui vérifie que le pirate ne bouge pas lorsqu'il rentre en collision
+   *     avec un autre pirate.
+   */
+  @Test
+  public void testMovementHunterByCrazy() {
+
+    when(this.monkeyIsland.collisionMonkey(
+            this.hunter.getCoordinateX(), this.hunter.getCoordinateY() + 1))
+        .thenReturn(monkey);
+    int[] tab = {0, 1};
+    try {
+      this.hunter.movementHunterMonkey(tab);
+      fail("Should return monkey");
+    } catch (CollisionException e) {
+      assertEquals(CollisionException.COLLISION_MONKEY, e.getExceptionCause());
+    }
+
+    assertEquals("Error Collision Pirate X", 10, this.hunter.getCoordinateX());
+    assertEquals("Error Collision Pirate Y", 10, this.hunter.getCoordinateY());
+  }
+
+  /**
+   * @throws Exception Méthode qui teste la détection du trésor par le pirate.
+   */
+  @Test
+  public void testMovementHunterByTreasure() {
+
+    when(this.monkeyIsland.collisionPirate(
+            this.hunter.getCoordinateX(), this.hunter.getCoordinateY() + 1))
+        .thenReturn(null);
+    when(this.monkeyIsland.collisionMonkey(
+            this.hunter.getCoordinateX(), this.hunter.getCoordinateY() + 1))
+        .thenReturn(null);
+    int[] tab = {0, 1};
+    try {
+      Treasure.getTreasure().setCoordinateX(this.hunter.getCoordinateX());
+      Treasure.getTreasure().setCoordinateY(this.hunter.getCoordinateY() + 1);
+      this.hunter.movementHunterMonkey(tab);
+    } catch (Exception e) {
+      fail("Should not have thrown any exception");
+    }
+    assertFalse(Treasure.getTreasure().getVisibility());
+  }
+
+  /**
+   * Test movement on a sea case.
+   *
+   * @throws Exception
+   */
+  @Test
+  public void testMovementPirateOnSeaCase() {
+    int[] tab = {1, 0};
+    try {
+      this.hunter2.movementHunterMonkey(tab);
+      fail("Should return sea case");
+    } catch (CollisionException e) {
+      assertEquals(CollisionException.COLLISION_SEA, e.getExceptionCause());
+    }
+
+    assertEquals("Error exit island X", 20, this.hunter2.getCoordinateX());
+    assertEquals("Error exit island Y", 20, this.hunter2.getCoordinateY());
+  }
+
+  /**
+   * Test movement on a rhum case.
+   *
+   * @throws Exception
+   */
+  @Test
+  public void testMovementPirateOnRhumCase() {
+
+    when(this.monkeyIsland.collisionRhum(
+            this.hunter2.getCoordinateX(), this.hunter2.getCoordinateY() + 1))
+        .thenReturn(rhum);
+    int[] tab = {0, 1};
+    try {
+      this.rhum.setPosition(20, 21);
+      this.hunter2.movementHunterMonkey(tab);
+    } catch (Exception e) {
+      fail("Should not have thrown any exception");
+    }
+
+    assertEquals("error visibility rhum", true, this.rhum.getVisibility());
+  }
 }
