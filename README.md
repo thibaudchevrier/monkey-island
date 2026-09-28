@@ -17,7 +17,9 @@ docker compose up --build
 
 Then open **<http://localhost:6080/vnc.html?autoconnect=1&resize=scale>** in a browser.
 The client runs in a container and is displayed through noVNC. Click the game window
-and move your pirate with the **arrow keys**. Closing the window starts a new pirate.
+and move your pirate with the **arrow keys**. Each move costs one energy, and rum
+restores it. A monkey that reaches your pirate kills it, even while you are idle. A
+dead pirate shows as a skull and can't move. Close the game window to respawn a new one.
 
 To add more players, run the client natively (Java 8+ required). It connects to
 `127.0.0.1:13579`, which the server container publishes:
