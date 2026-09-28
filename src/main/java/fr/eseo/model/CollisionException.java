@@ -12,7 +12,7 @@ public class CollisionException extends Exception{
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * variable static pour la sortie de l'île.
+	 * variable static pour la sortie de l'Ã®le.
 	 */
 	public static final int COLLISION_EXIT_ISLAND = 0;
 	
@@ -39,7 +39,7 @@ public class CollisionException extends Exception{
 	public static final int COLLISION_RHUM = 4;
 	
 	/**
-	 * variable static pour la collision avec un tr�sor.
+	 * variable static pour la collision avec un trésor.
 	 */
 	public static final int COLLISION_TREASURE = 5;
 

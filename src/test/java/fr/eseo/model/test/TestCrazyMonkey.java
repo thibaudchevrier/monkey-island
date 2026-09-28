@@ -3,6 +3,8 @@
  */
 package fr.eseo.model.test;
 
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -12,10 +14,6 @@ import java.util.ArrayList;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import fr.eseo.model.CrazyMonkey;
 import fr.eseo.model.Island;
@@ -29,9 +27,10 @@ import fr.eseo.model.StatePirate;
 /**
  * The Class TestCrazyMonkey.
  */
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(Island.class)
 public class TestCrazyMonkey {
+
+	/** Static mock of the Island singleton, released after each test. */
+	private MockedStatic<Island> islandStatic;
 
 	/** The Constant NB_ROWS. */
 	/* Largeur de l'île */
@@ -160,7 +159,7 @@ public class TestCrazyMonkey {
 	@Before
 	public void setUp() throws Exception{
 		this.monkeyIsland = mock(Island.class);
-	    PowerMockito.mockStatic(Island.class);
+	    this.islandStatic = Mockito.mockStatic(Island.class);
 		
 		this.monkey = new CrazyMonkey(X_MONKEY, Y_MONKEY);
 		this.monkey1 = new CrazyMonkey(X_MONKEY+1, Y_MONKEY);
@@ -190,6 +189,7 @@ public class TestCrazyMonkey {
 	 */
 	@After
 	public void tearDown() throws Exception{
+		this.islandStatic.close();
 		
 	}
 	

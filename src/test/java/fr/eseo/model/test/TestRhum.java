@@ -1,13 +1,12 @@
 package fr.eseo.model.test;
 
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import static org.junit.Assert.*;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 import static org.mockito.Mockito.*;
 
 import fr.eseo.model.Case;
@@ -19,14 +18,15 @@ import fr.eseo.model.Monkey;
 import fr.eseo.model.Pirate;
 import fr.eseo.model.Rhum;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(Island.class)
 
 /**
  * The Class TestRhum.
  */
 
 public class TestRhum {
+
+	/** Static mock of the Island singleton, released after each test. */
+	private MockedStatic<Island> islandStatic;
 	
 	/** The Constant NB_ROWS. */
 	/* Largeur de l'�le */
@@ -45,7 +45,7 @@ public class TestRhum {
 	@Before
 	public void setUp(){
 		this.isl = mock(Island.class);
-	    PowerMockito.mockStatic(Island.class);
+	    this.islandStatic = Mockito.mockStatic(Island.class);
 		this.plateau = new Case[NB_LINES][NB_ROWS];
 	    when(Island.getInstance()).thenReturn(isl);
 		when(this.isl.getnbLines()).thenReturn(NB_LINES);
@@ -92,4 +92,9 @@ public class TestRhum {
 		assertEquals("shouldn t have coordinate X", true, rhum.getVisibility());
 	}
 
+
+	@After
+	public void tearDown(){
+		this.islandStatic.close();
+	}
 }

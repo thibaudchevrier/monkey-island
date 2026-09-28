@@ -1,20 +1,17 @@
 package fr.eseo.model.test;
 
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import static org.junit.Assert.*;
 
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 import static org.mockito.Mockito.*;
 
 import fr.eseo.model.*;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(Island.class)
 
 // 
 /**
@@ -22,6 +19,9 @@ import fr.eseo.model.*;
  */
 
 public class TestTreasure {
+
+	/** Static mock of the Island singleton, released after each test. */
+	private MockedStatic<Island> islandStatic;
 	
 	/** The Constant NB_ROWS. */
 	/* Largeur de l'�le */
@@ -47,7 +47,7 @@ public class TestTreasure {
 		this.plateau = new Case[NB_LINES ][NB_ROWS];
 		this.pir = new Pirate(5, 5);
 		this.monk = new CrazyMonkey(7, 7);
-	    PowerMockito.mockStatic(Island.class);
+	    this.islandStatic = Mockito.mockStatic(Island.class);
 		when(Island.getInstance()).thenReturn(isl);
 		when(this.isl.getnbLines()).thenReturn(NB_LINES);
 		when(this.isl.getnbRows()).thenReturn(NB_ROWS);
@@ -90,5 +90,10 @@ public class TestTreasure {
 			fail("Should throw exception when out of Island");
 		}
 		assertEquals("shouldn t have coordinate X", false, Treasure.getTreasure().getVisibility());
+	}
+
+	@After
+	public void tearDown(){
+		this.islandStatic.close();
 	}
 }

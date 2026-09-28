@@ -1,5 +1,7 @@
 package fr.eseo.model.test;
 
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.mockito.Mockito.mock;
@@ -9,6 +11,7 @@ import java.awt.Point;
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -17,10 +20,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-import org.powermock.modules.junit4.PowerMockRunnerDelegate;
 
 import fr.eseo.model.Case;
 import fr.eseo.model.CaseType;
@@ -29,11 +28,12 @@ import fr.eseo.model.Island;
 import fr.eseo.model.Pirate;
 import fr.eseo.model.StatePirate;
 
-@RunWith(PowerMockRunner.class)
-@PowerMockRunnerDelegate(Parameterized.class)
-@PrepareForTest(Island.class)
+@RunWith(Parameterized.class)
 
 public class TestPametrizedMonkeys {
+
+	/** Static mock of the Island singleton, released after each test. */
+	private MockedStatic<Island> islandStatic;
 
 	/** The isl. */
 	private Island isl;
@@ -71,7 +71,7 @@ public class TestPametrizedMonkeys {
 	public void setUp(){	
 		this.isl = mock(Island.class);
 		this.plateau = new Case[6][6];
-	    PowerMockito.mockStatic(Island.class);
+	    this.islandStatic = Mockito.mockStatic(Island.class);
 		when(Island.getInstance()).thenReturn(isl);
 		when(this.isl.getnbLines()).thenReturn(6);
 		when(this.isl.getnbRows()).thenReturn(6);
@@ -160,5 +160,10 @@ public class TestPametrizedMonkeys {
 				assertEquals("error should be dead  ", pir4.getState(), StatePirate.dead);
 		}else 
 			assertEquals("error shouldn't move x ", x+y, monk.getCoordinateX()+ monk.getCoordinateY());
+	}
+
+	@After
+	public void tearDown(){
+		this.islandStatic.close();
 	}
 }

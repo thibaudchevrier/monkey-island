@@ -1,16 +1,18 @@
 package fr.eseo.model;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 /**
  * The Class Configuration.
  */
 public class Configuration {
-	
+
+	/** Classpath location of the game configuration. */
+	private static final String CONFIG_RESOURCE = "/config.properties";
+
 	private int nrjPirateMax = 0;
 	
 	private static Configuration config = null;
@@ -48,8 +50,10 @@ public class Configuration {
 	public void loading(){
 		try {
 			final Island isl = Island.getInstance();
-			final File file = new File("resources/config.properties");
-			final FileInputStream fileInput = new FileInputStream(file);
+			final InputStream fileInput = Configuration.class.getResourceAsStream(CONFIG_RESOURCE);
+			if(fileInput == null){
+				throw new FileNotFoundException(CONFIG_RESOURCE + " not found on the classpath");
+			}
 			final Properties properties = new Properties();
 			properties.load(fileInput);
 

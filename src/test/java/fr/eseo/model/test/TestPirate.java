@@ -1,14 +1,12 @@
 package fr.eseo.model.test;
 
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import static org.junit.Assert.*;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import static org.mockito.Mockito.*;
 
@@ -24,9 +22,10 @@ import fr.eseo.model.Treasure;
 /**
  * The Class TestPirate.
  */
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(Island.class)
 public class TestPirate {
+
+	/** Static mock of the Island singleton, released after each test. */
+	private MockedStatic<Island> islandStatic;
 
 	/**  Largeur de l'île. */
 	private static final int NB_ROWS = 30;
@@ -79,7 +78,7 @@ public class TestPirate {
 	@Before
 	public void setUp(){
 		this.monkeyIsland = mock(Island.class);
-	    PowerMockito.mockStatic(Island.class);
+	    this.islandStatic = Mockito.mockStatic(Island.class);
 		when(Island.getInstance()).thenReturn(monkeyIsland);
 		when(this.monkeyIsland.getnbLines()).thenReturn(NB_LINES);
 		when(this.monkeyIsland.getnbRows()).thenReturn(NB_ROWS);		
@@ -107,7 +106,9 @@ public class TestPirate {
 	 */
 	@After
 	public void tearDown() throws Exception 
-	{}
+	{
+		this.islandStatic.close();
+	}
 	
 	/** 
 	 * 
