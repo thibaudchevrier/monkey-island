@@ -73,9 +73,11 @@ public final class Configuration {
         properties.load(fileInput);
       }
 
-      final int xIsl = Integer.parseInt(properties.getProperty("IslandWidth"));
-      final int yIsl = Integer.parseInt(properties.getProperty("IslandWidth"));
-      isl.setIsland(xIsl, yIsl);
+      final int width = Integer.parseInt(properties.getProperty("IslandWidth"));
+      // "IslandHeigth" is the misspelled key of the original configuration files.
+      final String height =
+          properties.getProperty("IslandHeight", properties.getProperty("IslandHeigth"));
+      isl.setIsland(width, height == null ? width : Integer.parseInt(height));
 
       if (properties.getProperty("TreasureX") != null
           && properties.getProperty("TreasureY") != null) {

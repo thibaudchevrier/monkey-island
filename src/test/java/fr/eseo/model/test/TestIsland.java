@@ -70,6 +70,23 @@ public class TestIsland {
   }
 
   @Test
+  public void testNonSquareIsland() {
+    isl.setIsland(8, 5);
+    assertEquals("width", 8, isl.getnbLines());
+    assertEquals("height", 5, isl.getnbRows());
+    assertEquals(8, isl.getCase().length);
+    assertEquals(5, isl.getCase()[0].length);
+    assertEquals(CaseType.sea, isl.getCase()[7][2].getCaseType());
+    assertEquals(CaseType.sea, isl.getCase()[3][4].getCaseType());
+    assertEquals(CaseType.earth, isl.getCase()[6][3].getCaseType());
+    for (int i = 0; i < 50; i++) {
+      final Point p = isl.addEntity();
+      assertTrue("x out of the land: " + p.x, p.x >= 1 && p.x <= 6);
+      assertTrue("y out of the land: " + p.y, p.y >= 1 && p.y <= 3);
+    }
+  }
+
+  @Test
   public void testSetIsland() {
     isl.setIsland(3, 3);
     assertEquals("Error type case", Island.getInstance().getnbLines(), 3);

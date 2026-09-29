@@ -192,36 +192,21 @@ public final class ProtocoleMonkeyIsland {
    * @return le message formaté de ces informations.
    */
   public static final String formatteMessageIndicationCarte(Case[][] cases) {
-    String message = "";
-
-    message =
-        message.concat(
-            "/C "
-                + Island.getInstance().getnbRows()
-                + " "
-                + Island.getInstance().getnbLines()
-                + " ");
-
-    // Pour chaque case.
-    for (int x = 0; x < Island.getInstance().getnbRows(); x++) {
-      for (int y = 0; y < Island.getInstance().getnbLines(); y++) {
-        int typeCase = 0;
-        if (cases[y][x].getCaseType() == CaseType.sea) {
-          typeCase = 0;
-        } else if (cases[y][x].getCaseType() == CaseType.earth) {
-          typeCase = 1;
-        }
-        if (!(x == Island.getInstance().getnbRows() - 1
-            && y == Island.getInstance().getnbLines() - 1)) {
-          message = message.concat(typeCase + ProtocoleMonkeyIsland.SEPARATEUR_CHAMPS_OBJET);
-        } else {
-          message = message.concat(typeCase + "");
-        }
+    final int largeur = Island.getInstance().getnbLines();
+    final int hauteur = Island.getInstance().getnbRows();
+    // Guybrush reads the cases row by row: for each y, every x.
+    final List<String> types = new ArrayList<String>();
+    for (int y = 0; y < hauteur; y++) {
+      for (int x = 0; x < largeur; x++) {
+        types.add(cases[x][y].getCaseType() == CaseType.earth ? "1" : "0");
       }
     }
-    System.out.println(message);
-
-    return message;
+    return formateCommande(CARTE)
+        + largeur
+        + SEPARATEUR_CHAMPS
+        + hauteur
+        + SEPARATEUR_CHAMPS
+        + String.join(SEPARATEUR_CHAMPS_OBJET, types);
   }
 
   /**

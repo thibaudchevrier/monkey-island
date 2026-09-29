@@ -40,6 +40,7 @@ public class TestConfig {
   public void testInitIsland() {
     conf.loading();
     assertEquals("Error type case", isl.getnbLines(), 20);
+    assertEquals("Error height", 20, isl.getnbRows());
     assertEquals("Error type case", Treasure.getTreasure().getCoordinateX(), 7);
     assertEquals("Error type case", isl.getCase()[18][18].getCaseType(), CaseType.earth);
     assertEquals("Error type case", isl.getRhums().get(0).getCoordinateX(), 4);

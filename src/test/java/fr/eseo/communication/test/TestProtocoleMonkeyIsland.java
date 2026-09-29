@@ -3,12 +3,15 @@ package fr.eseo.communication.test;
 import static org.junit.Assert.assertEquals;
 
 import fr.eseo.communication.ProtocoleMonkeyIsland;
+import fr.eseo.model.Island;
 import fr.eseo.model.Pirate;
 import fr.eseo.model.Rhum;
 import fr.eseo.model.StatePirate;
 import java.awt.Point;
 import java.util.Arrays;
 import org.junit.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 /** Tests of the messages sent to the Guybrush client. */
 public class TestProtocoleMonkeyIsland {
@@ -58,5 +61,18 @@ public class TestProtocoleMonkeyIsland {
   @Test(expected = IndexOutOfBoundsException.class)
   public void testMoveParsingRejectsMissingValues() {
     ProtocoleMonkeyIsland.commandeDuDeplacement("/D 1");
+  }
+
+  @Test
+  public void testMapOfANonSquareIsland() {
+    final Island island = new Island();
+    island.setIsland(4, 3);
+    try (MockedStatic<Island> islandStatic = Mockito.mockStatic(Island.class)) {
+      islandStatic.when(Island::getInstance).thenReturn(island);
+      // 4 wide, 3 high, row by row: a sea row, then sea-earth-earth-sea, then a sea row.
+      assertEquals(
+          "/C 4 3 0-0-0-0-0-1-1-0-0-0-0-0",
+          ProtocoleMonkeyIsland.formatteMessageIndicationCarte(island.getCase()));
+    }
   }
 }

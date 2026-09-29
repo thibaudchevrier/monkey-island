@@ -10,6 +10,10 @@ a binary we cannot change. The server must speak the protocol Guybrush expects.
 
 ## Commands
 
+`make` lists shortcuts for everything below (`make up`, `make duo`, `make release-up TAG=x.y.z`,
+`make check`, `make test TEST=...`, `make release VERSION=x.y.z`); the Makefile runs Gradle in
+Docker when the local JDK is older than 17.
+
 Gradle needs JDK 17+ to run; the build uses a Java 25 toolchain. Without a local JDK, prefix
 commands with `docker run --rm -v "$PWD":/w -w /w eclipse-temurin:25-jdk`.
 
@@ -30,7 +34,7 @@ TAG=1.0.0 docker compose up --pull always --no-build   # a published version ins
 every exclusion is scoped and explained), Javadoc doclint, or line coverage under 70% (JaCoCo).
 Reports go to `build/reports/`.
 
-Releases: pushing a `vX.Y.Z` tag makes CI publish `ghcr.io/thibaudchevrier/monkey-island-{server,client}`
+Releases: `make release VERSION=x.y.z` (or pushing a `vX.Y.Z` tag) makes CI publish `ghcr.io/thibaudchevrier/monkey-island-{server,client}`
 as `X.Y.Z`, `X.Y`, `X`, `latest`, and creates a GitHub release. `main` publishes `main` and `sha-<commit>`.
 
 ## Architecture
@@ -45,6 +49,9 @@ as `X.Y.Z`, `X.Y`, `X`, `latest`, and creates a GitHub release. `main` publishes
   protocol messages for its own client, and broadcasts to the others through
   `ServiceMonkeyIsland.diffuseAutres` / `CanalDiffusion`.
 - `Island`, `Treasure` and `Configuration` are singletons (`getInstance()` / `getTreasure()`).
+- Coordinates: `x` is horizontal, `y` vertical. Despite their names, `Island.getnbLines()` is the
+  width (range of `x`) and `getnbRows()` the height (range of `y`); cases are indexed `[x][y]`.
+  The `/C` map message sends width, height, then the cases row by row (for each `y`, every `x`).
 
 ### Concurrency
 
@@ -81,4 +88,4 @@ order or on the shared singletons:
 
 `src/main/resources/config.properties` defines the island size, the positions of the treasure,
 rum and monkeys, energy, speeds, and the drunk rule (`DrunkDuration`, `StumbleChance`).
-`IslandHeigth` is ignored: the island is always square.
+Positions in the file are not validated against `IslandWidth`/`IslandHeight`.

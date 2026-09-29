@@ -13,12 +13,15 @@ The repository contains the **game server** (Java, TCP on port `13579`). The
 Requires Docker.
 
 ```sh
-docker compose up --build
+make up        # or: docker compose up --build
 ```
 
 Then open **<http://localhost:6080/vnc.html?autoconnect=1&resize=scale>** in a browser.
 The client runs in a container and is displayed through noVNC. Click the game window
 and move your pirate with the **arrow keys**.
+
+Run `make` to list every shortcut: `make duo` (two players), `make release-up TAG=1.0.0`
+(a published version), `make down`, `make logs`, `make check`, `make test TEST=...`.
 
 ### Rules
 
@@ -108,8 +111,7 @@ pull request, then builds both Docker images. On `main`, the images are pushed w
 To release, push a [semantic version](https://semver.org) tag:
 
 ```sh
-git tag v1.2.0
-git push origin v1.2.0
+make release VERSION=1.2.0    # checks you are on an up-to-date, clean main, then tags and pushes
 ```
 
 The pipeline then publishes the images as `1.2.0`, `1.2`, `1` and `latest`, and creates
@@ -134,4 +136,3 @@ docs/             original report, design-pattern slides, test data
 - Guybrush locks its keyboard on every key press until the server replies, even for keys
   that send nothing (Shift, Cmd...). The server works around this by resending your
   position on every monkey move, so a stuck keyboard unlocks within a second.
-- `IslandHeigth` is ignored: the island is always square (`IslandWidth` is read twice).

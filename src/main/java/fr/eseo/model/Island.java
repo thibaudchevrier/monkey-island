@@ -7,13 +7,13 @@ import java.util.Random;
 /** The Class Island. */
 public class Island {
 
-  /** The nb rows. */
+  /** The height of the island: the number of cases along y. */
   private int nbRows;
 
-  /** The nb lines. */
+  /** The width of the island: the number of cases along x. */
   private int nbLines;
 
-  /** The cases. */
+  /** The cases, indexed [x][y]. */
   private Case[][] cases;
 
   /** The Constant DEFAULT_NB_ROWS. */
@@ -62,59 +62,41 @@ public class Island {
   public Island() {
     this.nbRows = DEFAULT_NB_ROWS;
     this.nbLines = DEFAULT_NB_LINES;
-    this.cases = new Case[DEFAULT_NB_ROWS][DEFAULT_NB_LINES];
+    this.cases = new Case[DEFAULT_NB_LINES][DEFAULT_NB_ROWS];
     this.pirates = new ArrayList<Pirate>();
     this.monkeys = new ArrayList<Monkey>();
     this.rhums = new ArrayList<Rhum>();
   }
 
   /**
-   * Set a new dimension of the island.
+   * Set a new dimension of the island, with sea on its border.
    *
-   * @param nbLines the number of lines of the island
-   * @param nbRows the number of rows of the island
+   * @param nbLines the width of the island: the number of cases along x
+   * @param nbRows the height of the island: the number of cases along y
    */
   public void setIsland(int nbLines, int nbRows) {
     this.nbRows = nbRows;
     this.nbLines = nbLines;
-    this.cases = new Case[nbRows][nbLines];
+    this.cases = new Case[nbLines][nbRows];
     this.initIsland();
   }
 
   /**
-   * Gets the nb rows.
+   * Gets the height of the island.
    *
-   * @return the nb rows
+   * @return the number of cases along y
    */
   public int getnbRows() {
     return this.nbRows;
   }
 
   /**
-   * Sets the nb rows.
+   * Gets the width of the island.
    *
-   * @param nbRows the new nb rows
-   */
-  public void setnbRows(int nbRows) {
-    this.nbRows = nbRows;
-  }
-
-  /**
-   * Gets the nb lines.
-   *
-   * @return the nb lines
+   * @return the number of cases along x
    */
   public int getnbLines() {
     return this.nbLines;
-  }
-
-  /**
-   * Sets the nb lines.
-   *
-   * @param nbLines the new nb lines
-   */
-  public void setnbLines(int nbLines) {
-    this.nbLines = nbLines;
   }
 
   /**
